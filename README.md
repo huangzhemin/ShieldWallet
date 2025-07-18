@@ -12,7 +12,7 @@
 - 💰 **多网络支持**: 支持以太坊主网、Sepolia、Goerli测试网
 - 🔑 **多种导入方式**: 支持助记词和私钥导入
 - 💸 **转账功能**: 支持ETH转账和自定义Gas设置
-- 🪙 **代币管理**: 支持添加和管理ERC20代币
+- 🪙 **代币管理**: 支持添加和管理自定义ERC-20代币
 - 📱 **现代UI**: 简洁美观的用户界面
 - 🔒 **自动锁定**: 支持自动锁定功能保护资产安全
 - 🌐 **DApp连接**: 支持连接去中心化应用
@@ -40,13 +40,13 @@
 4. 打开Chrome浏览器，进入扩展管理页面 (`chrome://extensions/`)
 5. 开启"开发者模式"
 6. 点击"加载已解压的扩展程序"
-7. 选择项目根目录或构建输出目录
+7. 选择项目根目录
 
-### 从Chrome应用商店安装（即将推出）
+### 从Chrome商店安装（即将上线）
 
-1. 访问Chrome网上应用店
+1. 访问[Chrome网上应用店](https://chrome.google.com/webstore)
 2. 搜索"ShieldWallet"
-3. 点击"添加到Chrome"
+3. 点击"添加至Chrome"
 
 ## 使用说明
 
@@ -54,8 +54,8 @@
 
 1. 安装插件后，点击浏览器工具栏中的ShieldWallet图标
 2. 选择"创建钱包"或"导入钱包"
-3. 设置安全密码（至少8位，包含字母和数字）
-4. 如果是创建钱包，请妥善保存生成的助记词（建议离线保存）
+3. 设置安全密码
+4. 如果是创建钱包，请妥善保存生成的助记词
 
 ### 发送交易
 
@@ -67,8 +67,14 @@
 ### 接收资产
 
 1. 在钱包主界面点击"接收"按钮
-2. 复制钱包地址或使用二维码
-3. 分享给发送方
+2. 复制显示的钱包地址或使用二维码
+3. 将地址发送给付款方
+
+### 添加代币
+
+1. 在钱包主界面点击"添加代币"按钮
+2. 输入代币合约地址
+3. 确认代币信息并保存
 
 ### 网络切换
 
@@ -80,8 +86,8 @@
 - **构建工具**: Webpack
 - **加密**: Web Crypto API
 - **存储**: Chrome Storage API
-- **网络**: ethers.js + JSON-RPC
-- **安全**: 密码哈希 + AES-GCM加密
+- **网络**: JSON-RPC
+- **区块链交互**: ethers.js
 
 ## 项目结构
 
@@ -91,21 +97,12 @@ ShieldWallet/
 ├── public/                # 静态资源
 │   ├── popup.html        # 弹窗页面
 │   ├── styles/           # 样式文件
-│   │   └── popup.css     # 弹窗样式
-│   ├── scripts/          # 编译后的脚本
-│   │   └── popup.js      # 弹窗逻辑
 │   └── assets/           # 图标资源
 ├── src/                  # 源代码
 │   ├── background/       # 后台脚本
-│   │   └── index.ts      # 后台入口
 │   ├── popup/           # 弹窗脚本
-│   │   └── index.ts      # 弹窗入口
 │   ├── services/        # 核心服务
-│   │   ├── wallet.ts    # 钱包服务
-│   │   ├── crypto.ts    # 加密服务
-│   │   └── storage.ts   # 存储服务
 │   └── utils/           # 工具函数
-│       └── index.ts     # 通用工具
 └── webpack.config.js     # 构建配置
 ```
 
@@ -117,14 +114,16 @@ ShieldWallet/
 2. 助记词和私钥是您资产的唯一凭证，请妥善保管
 3. 不要在不安全的网络环境下使用钱包
 4. 定期备份您的钱包数据
-5. 警惕钓鱼网站和恶意DApp
+5. 不要将助记词或私钥分享给任何人
+6. 警惕钓鱼网站和欺诈应用
 
 ## 开发
 
-### 前置要求
+### 环境要求
 
 - Node.js 16+
 - npm 7+ 或 yarn 1.22+
+- Chrome 88+
 
 ### 开发模式
 
@@ -146,16 +145,16 @@ npm run test
 
 ## 路线图
 
-- [ ] 支持NFT显示和管理
-- [ ] 多链支持（BSC、Polygon等）
+- [ ] 支持更多EVM兼容链
+- [ ] NFT资产展示
 - [ ] 硬件钱包集成
-- [ ] 交易加速功能
 - [ ] 多语言支持
-- [ ] 交易模拟预览
+- [ ] 交易加速功能
+- [ ] 批量转账功能
 
 ## 许可证
 
-MIT License © 2023 ShieldWallet
+MIT License
 
 ## 贡献
 
@@ -163,5 +162,13 @@ MIT License © 2023 ShieldWallet
 
 ## 联系方式
 
-- 项目主页：[GitHub](https://github.com/huangzhemin/ShieldWallet)
-- 问题反馈：[Issues](https://github.com/huangzhemin/ShieldWallet/issues)
+如有问题或建议，请通过以下方式联系我们：
+
+- 提交 [GitHub Issue](https://github.com/huangzhemin/ShieldWallet/issues)
+- 邮箱: contact@shieldwallet.com
+
+---
+
+<div align="center">
+  <p>用❤️打造</p>
+</div>
