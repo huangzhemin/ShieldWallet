@@ -1,0 +1,33 @@
+{
+  "name": "shieldwallet",
+  "version": "1.0.0",
+  "description": "安全可靠的区块链钱包Chrome扩展",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack --mode=production",
+    "dev": "webpack --mode=development --watch",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/huangzhemin/ShieldWallet.git"
+  },
+  "keywords": ["wallet", "blockchain", "ethereum", "chrome-extension"],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/huangzhemin/ShieldWallet/issues"
+  },
+  "homepage": "https://github.com/huangzhemin/ShieldWallet#readme",
+  "dependencies": {
+    "ethers": "^6.8.1",
+    "bip39": "^3.1.0"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.246",
+    "typescript": "^5.2.2",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4",
+    "ts-loader": "^9.5.0"
+  }
+}
