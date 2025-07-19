@@ -1,182 +1,6 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	"use strict";
 
-;// ./src/services/storage.ts
-/**
- * Chrome扩展存储服务
- */
-class StorageService {
-    /**
-     * 保存数据到Chrome存储
-     */
-    static async set(key, value) {
-        return new Promise((resolve, reject) => {
-            chrome.storage.local.set({ [key]: value }, () => {
-                if (chrome.runtime.lastError) {
-                    reject(chrome.runtime.lastError);
-                }
-                else {
-                    resolve();
-                }
-            });
-        });
-    }
-    /**
-     * 从Chrome存储获取数据
-     */
-    static async get(key) {
-        return new Promise((resolve, reject) => {
-            chrome.storage.local.get([key], (result) => {
-                if (chrome.runtime.lastError) {
-                    reject(chrome.runtime.lastError);
-                }
-                else {
-                    resolve(result[key]);
-                }
-            });
-        });
-    }
-    /**
-     * 从Chrome存储删除数据
-     */
-    static async remove(key) {
-        return new Promise((resolve, reject) => {
-            chrome.storage.local.remove([key], () => {
-                if (chrome.runtime.lastError) {
-                    reject(chrome.runtime.lastError);
-                }
-                else {
-                    resolve();
-                }
-            });
-        });
-    }
-    /**
-     * 清空所有存储数据
-     */
-    static async clear() {
-        return new Promise((resolve, reject) => {
-            chrome.storage.local.clear(() => {
-                if (chrome.runtime.lastError) {
-                    reject(chrome.runtime.lastError);
-                }
-                else {
-                    resolve();
-                }
-            });
-        });
-    }
-    /**
-     * 获取所有存储的键值对
-     */
-    static async getAll() {
-        return new Promise((resolve, reject) => {
-            chrome.storage.local.get(null, (result) => {
-                if (chrome.runtime.lastError) {
-                    reject(chrome.runtime.lastError);
-                }
-                else {
-                    resolve(result);
-                }
-            });
-        });
-    }
-    /**
-     * 保存钱包数据
-     */
-    static async saveWallet(walletData) {
-        await this.set(this.WALLET_KEY, walletData);
-    }
-    /**
-     * 获取钱包数据
-     */
-    static async getWallet() {
-        return await this.get(this.WALLET_KEY);
-    }
-    /**
-     * 删除钱包数据
-     */
-    static async removeWallet() {
-        await this.remove(this.WALLET_KEY);
-    }
-    /**
-     * 保存设置
-     */
-    static async saveSettings(settings) {
-        await this.set(this.SETTINGS_KEY, settings);
-    }
-    /**
-     * 获取设置
-     */
-    static async getSettings() {
-        const defaultSettings = {
-            autoLock: true,
-            lockTimeout: 15, // 分钟
-            showTestNetworks: false,
-            currency: 'USD'
-        };
-        const settings = await this.get(this.SETTINGS_KEY);
-        return { ...defaultSettings, ...settings };
-    }
-    /**
-     * 保存当前网络
-     */
-    static async saveCurrentNetwork(networkId) {
-        await this.set(this.NETWORK_KEY, networkId);
-    }
-    /**
-     * 获取当前网络
-     */
-    static async getCurrentNetwork() {
-        const network = await this.get(this.NETWORK_KEY);
-        return network || '1'; // 默认主网
-    }
-    /**
-     * 保存自定义代币
-     */
-    static async saveCustomTokens(tokens) {
-        await this.set(this.TOKENS_KEY, tokens);
-    }
-    /**
-     * 获取自定义代币
-     */
-    static async getCustomTokens() {
-        const tokens = await this.get(this.TOKENS_KEY);
-        return tokens || [];
-    }
-    /**
-     * 保存交易历史
-     */
-    static async saveTransactionHistory(transactions) {
-        await this.set(this.TRANSACTIONS_KEY, transactions);
-    }
-    /**
-     * 获取交易历史
-     */
-    static async getTransactionHistory() {
-        const transactions = await this.get(this.TRANSACTIONS_KEY);
-        return transactions || [];
-    }
-    /**
-     * 添加交易到历史记录
-     */
-    static async addTransaction(transaction) {
-        const transactions = await this.getTransactionHistory();
-        transactions.unshift(transaction); // 添加到开头
-        // 只保留最近100条交易
-        if (transactions.length > 100) {
-            transactions.splice(100);
-        }
-        await this.saveTransactionHistory(transactions);
-    }
-}
-// 钱包相关的存储键
-StorageService.WALLET_KEY = 'wallet_data';
-StorageService.SETTINGS_KEY = 'wallet_settings';
-StorageService.NETWORK_KEY = 'current_network';
-StorageService.TOKENS_KEY = 'custom_tokens';
-StorageService.TRANSACTIONS_KEY = 'transaction_history';
-
 ;// ./src/utils/crypto.ts
 /**
  * 加密工具类 - 使用Web Crypto API
@@ -382,6 +206,182 @@ class ValidationUtils {
         return num.toFixed(decimals).replace(/\.?0+$/, '');
     }
 }
+
+;// ./src/services/storage.ts
+/**
+ * Chrome扩展存储服务
+ */
+class StorageService {
+    /**
+     * 保存数据到Chrome存储
+     */
+    static async set(key, value) {
+        return new Promise((resolve, reject) => {
+            chrome.storage.local.set({ [key]: value }, () => {
+                if (chrome.runtime.lastError) {
+                    reject(chrome.runtime.lastError);
+                }
+                else {
+                    resolve();
+                }
+            });
+        });
+    }
+    /**
+     * 从Chrome存储获取数据
+     */
+    static async get(key) {
+        return new Promise((resolve, reject) => {
+            chrome.storage.local.get([key], (result) => {
+                if (chrome.runtime.lastError) {
+                    reject(chrome.runtime.lastError);
+                }
+                else {
+                    resolve(result[key]);
+                }
+            });
+        });
+    }
+    /**
+     * 从Chrome存储删除数据
+     */
+    static async remove(key) {
+        return new Promise((resolve, reject) => {
+            chrome.storage.local.remove([key], () => {
+                if (chrome.runtime.lastError) {
+                    reject(chrome.runtime.lastError);
+                }
+                else {
+                    resolve();
+                }
+            });
+        });
+    }
+    /**
+     * 清空所有存储数据
+     */
+    static async clear() {
+        return new Promise((resolve, reject) => {
+            chrome.storage.local.clear(() => {
+                if (chrome.runtime.lastError) {
+                    reject(chrome.runtime.lastError);
+                }
+                else {
+                    resolve();
+                }
+            });
+        });
+    }
+    /**
+     * 获取所有存储的键值对
+     */
+    static async getAll() {
+        return new Promise((resolve, reject) => {
+            chrome.storage.local.get(null, (result) => {
+                if (chrome.runtime.lastError) {
+                    reject(chrome.runtime.lastError);
+                }
+                else {
+                    resolve(result);
+                }
+            });
+        });
+    }
+    /**
+     * 保存钱包数据
+     */
+    static async saveWallet(walletData) {
+        await this.set(this.WALLET_KEY, walletData);
+    }
+    /**
+     * 获取钱包数据
+     */
+    static async getWallet() {
+        return await this.get(this.WALLET_KEY);
+    }
+    /**
+     * 删除钱包数据
+     */
+    static async removeWallet() {
+        await this.remove(this.WALLET_KEY);
+    }
+    /**
+     * 保存设置
+     */
+    static async saveSettings(settings) {
+        await this.set(this.SETTINGS_KEY, settings);
+    }
+    /**
+     * 获取设置
+     */
+    static async getSettings() {
+        const defaultSettings = {
+            autoLock: true,
+            lockTimeout: 15, // 分钟
+            showTestNetworks: false,
+            currency: 'USD'
+        };
+        const settings = await this.get(this.SETTINGS_KEY);
+        return { ...defaultSettings, ...settings };
+    }
+    /**
+     * 保存当前网络
+     */
+    static async saveCurrentNetwork(networkId) {
+        await this.set(this.NETWORK_KEY, networkId);
+    }
+    /**
+     * 获取当前网络
+     */
+    static async getCurrentNetwork() {
+        const network = await this.get(this.NETWORK_KEY);
+        return network || '1'; // 默认主网
+    }
+    /**
+     * 保存自定义代币
+     */
+    static async saveCustomTokens(tokens) {
+        await this.set(this.TOKENS_KEY, tokens);
+    }
+    /**
+     * 获取自定义代币
+     */
+    static async getCustomTokens() {
+        const tokens = await this.get(this.TOKENS_KEY);
+        return tokens || [];
+    }
+    /**
+     * 保存交易历史
+     */
+    static async saveTransactionHistory(transactions) {
+        await this.set(this.TRANSACTIONS_KEY, transactions);
+    }
+    /**
+     * 获取交易历史
+     */
+    static async getTransactionHistory() {
+        const transactions = await this.get(this.TRANSACTIONS_KEY);
+        return transactions || [];
+    }
+    /**
+     * 添加交易到历史记录
+     */
+    static async addTransaction(transaction) {
+        const transactions = await this.getTransactionHistory();
+        transactions.unshift(transaction); // 添加到开头
+        // 只保留最近100条交易
+        if (transactions.length > 100) {
+            transactions.splice(100);
+        }
+        await this.saveTransactionHistory(transactions);
+    }
+}
+// 钱包相关的存储键
+StorageService.WALLET_KEY = 'wallet_data';
+StorageService.SETTINGS_KEY = 'wallet_settings';
+StorageService.NETWORK_KEY = 'current_network';
+StorageService.TOKENS_KEY = 'custom_tokens';
+StorageService.TRANSACTIONS_KEY = 'transaction_history';
 
 ;// ./src/services/network.ts
 /**
@@ -849,235 +849,130 @@ WalletService.currentWallet = null;
 WalletService.isUnlocked = false;
 
 ;// ./src/background/index.ts
-
-
-
 /**
- * Chrome扩展背景脚本
+ * ShieldWallet 后台脚本
+ * 处理钱包核心功能和安全操作
  */
-class BackgroundService {
-    constructor() {
-        this.autoLockTimer = null;
-        this.init();
+
+
+console.log('ShieldWallet 后台脚本已加载');
+// 服务都是静态类，无需实例化
+console.log('服务已准备就绪');
+// 处理来自弹出窗口的消息
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    console.log('收到消息:', request.type);
+    // 根据消息类型处理不同的请求
+    switch (request.type) {
+        case 'CHECK_WALLET_EXISTS':
+            checkWalletExists().then(sendResponse);
+            return true;
+        case 'CREATE_WALLET':
+            createWallet(request.data.password).then(sendResponse);
+            return true;
+        case 'IMPORT_WALLET':
+            importWallet(request.data).then(sendResponse);
+            return true;
+        case 'GET_ACCOUNT_INFO':
+            getAccountInfo().then(sendResponse);
+            return true;
+        case 'SEND_TRANSACTION':
+            sendTransaction(request.data).then(sendResponse);
+            return true;
+        case 'SWITCH_NETWORK':
+            switchNetwork(request.data.networkId).then(sendResponse);
+            return true;
+        default:
+            sendResponse({ success: false, error: '未知请求类型' });
+            return false;
     }
-    /**
-     * 初始化背景服务
-     */
-    async init() {
-        console.log('ShieldWallet 背景服务启动');
-        // 监听扩展安装事件
-        chrome.runtime.onInstalled.addListener(this.handleInstalled.bind(this));
-        // 监听来自popup的消息
-        chrome.runtime.onMessage.addListener(this.handleMessage.bind(this));
-        // 监听存储变化
-        chrome.storage.onChanged.addListener(this.handleStorageChanged.bind(this));
-        // 设置自动锁定
-        await this.setupAutoLock();
+});
+// 检查钱包是否已存在
+async function checkWalletExists() {
+    try {
+        const exists = await WalletService.walletExists();
+        return { success: true, exists };
     }
-    /**
-     * 处理扩展安装事件
-     */
-    handleInstalled(details) {
-        if (details.reason === 'install') {
-            console.log('ShieldWallet 首次安装');
-            // 可以在这里设置默认配置
-        }
-        else if (details.reason === 'update') {
-            console.log('ShieldWallet 更新到新版本');
-        }
-    }
-    /**
-     * 处理来自popup的消息
-     */
-    async handleMessage(request, sender, sendResponse) {
-        try {
-            switch (request.action) {
-                case 'getWalletStatus':
-                    const exists = await WalletService.walletExists();
-                    const isUnlocked = WalletService.isWalletUnlocked();
-                    sendResponse({ exists, isUnlocked });
-                    break;
-                case 'unlockWallet':
-                    const unlocked = await WalletService.unlockWallet(request.password);
-                    if (unlocked) {
-                        await this.resetAutoLockTimer();
-                    }
-                    sendResponse({ success: unlocked });
-                    break;
-                case 'lockWallet':
-                    WalletService.lockWallet();
-                    this.clearAutoLockTimer();
-                    sendResponse({ success: true });
-                    break;
-                case 'getBalance':
-                    if (WalletService.isWalletUnlocked()) {
-                        const balance = await WalletService.getBalance();
-                        sendResponse({ balance });
-                    }
-                    else {
-                        sendResponse({ error: '钱包未解锁' });
-                    }
-                    break;
-                case 'getCurrentAddress':
-                    const address = WalletService.getCurrentAddress();
-                    sendResponse({ address });
-                    break;
-                case 'sendTransaction':
-                    if (WalletService.isWalletUnlocked()) {
-                        const txHash = await WalletService.sendTransaction(request.transaction, request.password);
-                        sendResponse({ txHash });
-                    }
-                    else {
-                        sendResponse({ error: '钱包未解锁' });
-                    }
-                    break;
-                case 'getNetworkInfo':
-                    const network = NetworkService.getCurrentNetwork();
-                    sendResponse({ network });
-                    break;
-                case 'switchNetwork':
-                    NetworkService.setCurrentNetwork(request.networkId);
-                    await StorageService.saveCurrentNetwork(request.networkId);
-                    sendResponse({ success: true });
-                    break;
-                case 'getTransactionHistory':
-                    const transactions = await StorageService.getTransactionHistory();
-                    sendResponse({ transactions });
-                    break;
-                case 'resetAutoLock':
-                    await this.resetAutoLockTimer();
-                    sendResponse({ success: true });
-                    break;
-                default:
-                    sendResponse({ error: '未知操作' });
-            }
-        }
-        catch (error) {
-            console.error('处理消息时出错:', error);
-            sendResponse({ error: error instanceof Error ? error.message : String(error) });
-        }
-    }
-    /**
-     * 处理存储变化事件
-     */
-    handleStorageChanged(changes, areaName) {
-        if (areaName === 'local') {
-            // 监听设置变化
-            if (changes[StorageService.SETTINGS_KEY]) {
-                this.setupAutoLock();
-            }
-            // 监听网络变化
-            if (changes[StorageService.NETWORK_KEY]) {
-                const newNetworkId = changes[StorageService.NETWORK_KEY].newValue;
-                if (newNetworkId) {
-                    NetworkService.setCurrentNetwork(newNetworkId);
-                }
-            }
-        }
-    }
-    /**
-     * 设置自动锁定
-     */
-    async setupAutoLock() {
-        try {
-            const settings = await StorageService.getSettings();
-            if (settings.autoLock && settings.lockTimeout > 0) {
-                this.clearAutoLockTimer();
-                const timeoutMs = settings.lockTimeout * 60 * 1000; // 转换为毫秒
-                this.autoLockTimer = setTimeout(() => {
-                    if (WalletService.isWalletUnlocked()) {
-                        console.log('自动锁定钱包');
-                        WalletService.lockWallet();
-                        // 通知popup钱包已锁定
-                        chrome.runtime.sendMessage({ action: 'walletLocked' });
-                    }
-                }, timeoutMs);
-            }
-        }
-        catch (error) {
-            console.error('设置自动锁定失败:', error);
-        }
-    }
-    /**
-     * 重置自动锁定计时器
-     */
-    async resetAutoLockTimer() {
-        this.clearAutoLockTimer();
-        await this.setupAutoLock();
-    }
-    /**
-     * 清除自动锁定计时器
-     */
-    clearAutoLockTimer() {
-        if (this.autoLockTimer) {
-            clearTimeout(this.autoLockTimer);
-            this.autoLockTimer = null;
-        }
-    }
-    /**
-     * 检查网络连接状态
-     */
-    async checkNetworkConnection() {
-        try {
-            const isConnected = await NetworkService.checkConnection();
-            if (!isConnected) {
-                console.warn('网络连接失败');
-            }
-        }
-        catch (error) {
-            console.error('检查网络连接时出错:', error);
-        }
-    }
-    /**
-     * 定期更新余额和交易状态
-     */
-    async updateWalletData() {
-        if (!WalletService.isWalletUnlocked()) {
-            return;
-        }
-        try {
-            // 更新余额
-            const balance = await WalletService.getBalance();
-            // 检查待确认交易状态
-            const transactions = await StorageService.getTransactionHistory();
-            const pendingTxs = transactions.filter(tx => tx.status === 'pending');
-            for (const tx of pendingTxs) {
-                try {
-                    const receipt = await NetworkService.getTransactionReceipt(tx.hash);
-                    if (receipt) {
-                        tx.status = receipt.status === '0x1' ? 'confirmed' : 'failed';
-                        tx.blockNumber = receipt.blockNumber;
-                        tx.gasUsed = receipt.gasUsed;
-                    }
-                }
-                catch (error) {
-                    // 交易可能还未被打包
-                    console.log(`交易 ${tx.hash} 仍在等待确认`);
-                }
-            }
-            // 保存更新后的交易历史
-            await StorageService.saveTransactionHistory(transactions);
-        }
-        catch (error) {
-            console.error('更新钱包数据时出错:', error);
-        }
-    }
-    /**
-     * 启动定期任务
-     */
-    startPeriodicTasks() {
-        // 每30秒检查一次网络连接
-        setInterval(() => {
-            this.checkNetworkConnection();
-        }, 30000);
-        // 每10秒更新一次钱包数据
-        setInterval(() => {
-            this.updateWalletData();
-        }, 10000);
+    catch (error) {
+        console.error('检查钱包存在出错:', error);
+        return { success: false, error: '检查钱包状态失败' };
     }
 }
-// 启动背景服务
-new BackgroundService();
+// 创建新钱包
+async function createWallet(password) {
+    try {
+        const result = await WalletService.createWallet(password);
+        return {
+            success: true,
+            mnemonic: result.mnemonic,
+            address: result.wallet.address
+        };
+    }
+    catch (error) {
+        console.error('创建钱包出错:', error);
+        return { success: false, error: '创建钱包失败' };
+    }
+}
+// 导入钱包
+async function importWallet(data) {
+    try {
+        const { type, value, password } = data;
+        const result = await WalletService.importWallet(value, type, password);
+        return { success: true, address: result.address };
+    }
+    catch (error) {
+        console.error('导入钱包出错:', error);
+        return { success: false, error: '导入钱包失败' };
+    }
+}
+// 获取账户信息
+async function getAccountInfo() {
+    try {
+        if (!WalletService.isWalletUnlocked()) {
+            return { success: false, error: '钱包未解锁' };
+        }
+        const address = WalletService.getCurrentAddress();
+        const balance = await WalletService.getBalance();
+        return {
+            success: true,
+            address,
+            balance,
+            isUnlocked: true
+        };
+    }
+    catch (error) {
+        console.error('获取账户信息出错:', error);
+        return { success: false, error: '获取账户信息失败' };
+    }
+}
+// 发送交易
+async function sendTransaction(data) {
+    try {
+        const { to, amount, gasPrice, gasLimit, password } = data;
+        const transaction = {
+            to,
+            value: amount,
+            gasPrice,
+            gasLimit: gasLimit || '21000'
+        };
+        const txHash = await WalletService.sendTransaction(transaction, password);
+        return { success: true, txHash };
+    }
+    catch (error) {
+        console.error('发送交易出错:', error);
+        return { success: false, error: '发送交易失败' };
+    }
+}
+// 切换网络
+async function switchNetwork(networkId) {
+    try {
+        await StorageService.saveCurrentNetwork(networkId);
+        return { success: true };
+    }
+    catch (error) {
+        console.error('切换网络出错:', error);
+        return { success: false, error: '切换网络失败' };
+    }
+}
 
 /******/ })()
 ;

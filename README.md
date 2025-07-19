@@ -3,7 +3,7 @@
 一个安全可靠的区块链钱包Chrome扩展，支持以太坊和EVM兼容网络。
 
 <div align="center">
-  <img src="public/assets/icon128.png" alt="ShieldWallet Logo" width="128" height="128">
+  <img src="public/assets/icon128.svg" alt="ShieldWallet Logo" width="128" height="128">
 </div>
 
 ## 功能特性

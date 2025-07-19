@@ -1,8 +1,7 @@
 <svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="128" height="128" rx="20" fill="#1a73e8"/>
-  <path d="M64 16L96 32V56C96 84 64 112 64 112S32 84 32 56V32L64 16Z" fill="white"/>
-  <path d="M64 32L80 40V56C80 72 64 88 64 88S48 72 48 56V40L64 32Z" fill="#1a73e8"/>
-  <circle cx="64" cy="56" r="8" fill="white"/>
-  <path d="M56 56L62 62L72 52" stroke="#1a73e8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-  <text x="64" y="104" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="12" font-weight="bold">SHIELD</text>
+  <rect width="128" height="128" rx="20" fill="#4F46E5"/>
+  <path d="M64 20L88 48H72V80H56V48H40L64 20Z" fill="white"/>
+  <rect x="32" y="92" width="64" height="8" fill="white"/>
+  <circle cx="64" cy="64" r="52" stroke="white" stroke-width="4" fill="none" opacity="0.3"/>
+  <path d="M44 64C44 52.954 52.954 44 64 44C75.046 44 84 52.954 84 64" stroke="white" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
 </svg>

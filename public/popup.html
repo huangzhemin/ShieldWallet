@@ -132,6 +132,24 @@
           </div>
         </form>
       </div>
+
+      <!-- 接收页面 -->
+      <div class="screen hidden" id="receiveScreen">
+        <h2>接收资产</h2>
+        <div class="qr-container">
+          <div id="addressQRCode"></div>
+        </div>
+        <div class="address-container">
+          <p>您的钱包地址:</p>
+          <div class="address-box">
+            <span id="fullAddress">0x0000000000000000000000000000000000000000</span>
+            <button id="copyFullAddressBtn" class="icon-btn">📋</button>
+          </div>
+        </div>
+        <div class="btn-group">
+          <button type="button" class="btn btn-secondary" id="backFromReceiveBtn">返回</button>
+        </div>
+      </div>
     </main>
 
     <footer>
