@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShieldWallet - 多链钱包演示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .feature-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feature-card .icon {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .feature-list {
+            list-style: none;
+        }
+
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .feature-list li:before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+
+        .tech-stack {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .tech-stack h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .tech-categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .tech-category h4 {
+            color: #764ba2;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .tech-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tech-tag {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .demo-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .demo-section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .demo-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .demo-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .demo-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .demo-output {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #e9ecef;
+        }
+
+        .chain-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .chain-btn {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .chain-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .chain-btn:hover {
+            border-color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tech-categories {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ ShieldWallet</h1>
+            <p>支持 EVM、非EVM 和 Layer2 的多链钱包</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <h3>
+                    <span class="icon">🔗</span>
+                    多链支持
+                </h3>
+                <ul class="feature-list">
+                    <li>EVM链：以太坊、Polygon、BSC</li>
+                    <li>Layer2：Arbitrum、Optimism、zkSync</li>
+                    <li>非EVM：Solana、Aptos</li>
+                    <li>统一的钱包管理接口</li>
+                    <li>跨链地址生成与管理</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <h3>
+                    <span class="icon">💰</span>
+                    DeFi 集成
+                </h3>
+                <ul class="feature-list">
+                    <li>多协议代币交换</li>
+                    <li>流动性挖矿支持</li>
+                    <li>借贷协议集成</li>
+                    <li>收益农场管理</li>
+                    <li>无常损失计算</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <h3>
+                    <span class="icon">🎨</span>
+                    NFT 管理
+                </h3>
+                <ul class="feature-list">
+                    <li>多链NFT展示</li>
+                    <li>元数据解析</li>
+                    <li>NFT转移功能</li>
+                    <li>集合信息查询</li>
+                    <li>市场数据获取</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <h3>
+                    <span class="icon">🌉</span>
+                    跨链桥
+                </h3>
+                <ul class="feature-list">
+                    <li>SVM ↔ EVM 跨链</li>
+                    <li>Wormhole 集成</li>
+                    <li>LayerZero 支持</li>
+                    <li>跨链状态追踪</li>
+                    <li>最优路径选择</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <h3>
+                    <span class="icon">⛽</span>
+                    Gas 优化
+                </h3>
+                <ul class="feature-list">
+                    <li>实时Gas价格监控</li>
+                    <li>交易模拟执行</li>
+                    <li>费用预估计算</li>
+                    <li>多速度选项</li>
+                    <li>EIP-1559 支持</li>
+                </ul>
+            </div>
+
+            <div class="feature-card">
+                <h3>
+                    <span class="icon">🔒</span>
+                    安全特性
+                </h3>
+                <ul class="feature-list">
+                    <li>BIP-39/44 标准</li>
+                    <li>硬件钱包支持</li>
+                    <li>MPC 多方计算</li>
+                    <li>交易模拟器</li>
+                    <li>冷存储集成</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="tech-stack">
+            <h2>🛠️ 技术栈</h2>
+            <div class="tech-categories">
+                <div>
+                    <h4>区块链 SDK</h4>
+                    <div class="tech-tags">
+                        <span class="tech-tag">ethers.js</span>
+                        <span class="tech-tag">@solana/web3.js</span>
+                        <span class="tech-tag">aptos</span>
+                        <span class="tech-tag">@layerzerolabs/sdk</span>
+                    </div>
+                </div>
+                <div>
+                    <h4>跨链协议</h4>
+                    <div class="tech-tags">
+                        <span class="tech-tag">Wormhole</span>
+                        <span class="tech-tag">LayerZero</span>
+                        <span class="tech-tag">Allbridge</span>
+                        <span class="tech-tag">Portal Bridge</span>
+                    </div>
+                </div>
+                <div>
+                    <h4>DeFi 协议</h4>
+                    <div class="tech-tags">
+                        <span class="tech-tag">Uniswap</span>
+                        <span class="tech-tag">1inch</span>
+                        <span class="tech-tag">Jupiter</span>
+                        <span class="tech-tag">PancakeSwap</span>
+                    </div>
+                </div>
+                <div>
+                    <h4>安全 & 加密</h4>
+                    <div class="tech-tags">
+                        <span class="tech-tag">bip39</span>
+                        <span class="tech-tag">tweetnacl</span>
+                        <span class="tech-tag">ed25519-hd-key</span>
+                        <span class="tech-tag">tss-lib</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>🚀 功能演示</h2>
+            
+            <div class="chain-selector">
+                <div class="chain-btn active" data-chain="ethereum">以太坊</div>
+                <div class="chain-btn" data-chain="polygon">Polygon</div>
+                <div class="chain-btn" data-chain="arbitrum">Arbitrum</div>
+                <div class="chain-btn" data-chain="solana">Solana</div>
+                <div class="chain-btn" data-chain="aptos">Aptos</div>
+            </div>
+
+            <div class="demo-buttons">
+                <button class="demo-btn" onclick="createWallet()">创建钱包</button>
+                <button class="demo-btn" onclick="getBalance()">查询余额</button>
+                <button class="demo-btn" onclick="estimateGas()">估算Gas费</button>
+                <button class="demo-btn" onclick="simulateTransaction()">模拟交易</button>
+                <button class="demo-btn" onclick="getDeFiQuote()">获取DeFi报价</button>
+                <button class="demo-btn" onclick="getBridgeQuote()">跨链桥报价</button>
+                <button class="demo-btn" onclick="getNFTs()">获取NFT列表</button>
+                <button class="demo-btn" onclick="showChainInfo()">链信息</button>
+            </div>
+
+            <div class="demo-output" id="output">
+                <div style="color: #667eea; font-weight: bold;">📋 演示输出</div>
+                <div style="margin-top: 10px; color: #666;">点击上方按钮查看 ShieldWallet 的各项功能演示</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentChain = 'ethereum';
+        
+        // 链选择器事件
+        document.querySelectorAll('.chain-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.chain-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentChain = btn.dataset.chain;
+                log(`🔄 切换到 ${btn.textContent} 网络`);
+            });
+        });
+
+        function log(message) {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            output.innerHTML += `<div style="margin: 5px 0; padding: 8px; background: white; border-radius: 5px; border-left: 3px solid #667eea;">
+                <span style="color: #999; font-size: 0.8em;">[${timestamp}]</span> ${message}
+            </div>`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function createWallet() {
+            log(`🔐 正在为 ${currentChain} 创建新钱包...`);
+            
+            // 模拟钱包创建
+            setTimeout(() => {
+                const mockAddress = generateMockAddress(currentChain);
+                const mockMnemonic = 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
+                
+                log(`✅ 钱包创建成功！`);
+                log(`📍 地址: ${mockAddress}`);
+                log(`🔑 助记词: ${mockMnemonic}`);
+                log(`⚠️  请安全保存您的助记词`);
+            }, 1000);
+        }
+
+        function getBalance() {
+            log(`💰 正在查询 ${currentChain} 余额...`);
+            
+            setTimeout(() => {
+                const mockBalance = (Math.random() * 10).toFixed(4);
+                const symbol = getChainSymbol(currentChain);
+                
+                log(`✅ 余额查询成功: ${mockBalance} ${symbol}`);
+                
+                // 模拟代币余额
+                const tokens = getChainTokens(currentChain);
+                tokens.forEach(token => {
+                    const balance = (Math.random() * 1000).toFixed(2);
+                    log(`   💎 ${token}: ${balance}`);
+                });
+            }, 800);
+        }
+
+        function estimateGas() {
+            log(`⛽ 正在估算 ${currentChain} Gas费用...`);
+            
+            setTimeout(() => {
+                const gasData = getGasEstimate(currentChain);
+                
+                log(`✅ Gas费用估算完成:`);
+                log(`   🐌 慢速: ${gasData.slow} (${gasData.slowTime})`);
+                log(`   🚶 标准: ${gasData.standard} (${gasData.standardTime})`);
+                log(`   🏃 快速: ${gasData.fast} (${gasData.fastTime})`);
+                log(`   🚀 极速: ${gasData.instant} (${gasData.instantTime})`);
+            }, 600);
+        }
+
+        function simulateTransaction() {
+            log(`🧪 正在模拟 ${currentChain} 交易执行...`);
+            
+            setTimeout(() => {
+                const success = Math.random() > 0.2; // 80% 成功率
+                
+                if (success) {
+                    const gasUsed = Math.floor(Math.random() * 50000 + 21000);
+                    log(`✅ 交易模拟成功!`);
+                    log(`   ⛽ 预计Gas消耗: ${gasUsed.toLocaleString()}`);
+                    log(`   💰 预计费用: ${(gasUsed * 0.00000002).toFixed(6)} ${getChainSymbol(currentChain)}`);
+                } else {
+                    log(`❌ 交易模拟失败: 余额不足或合约执行错误`);
+                    log(`   💡 建议检查账户余额和交易参数`);
+                }
+            }, 1200);
+        }
+
+        function getDeFiQuote() {
+            log(`🔄 正在获取 ${currentChain} DeFi 交换报价...`);
+            
+            setTimeout(() => {
+                const fromToken = 'USDC';
+                const toToken = getChainSymbol(currentChain);
+                const amount = '1000';
+                const rate = (Math.random() * 0.001 + 0.0005).toFixed(6);
+                const output = (parseFloat(amount) * parseFloat(rate)).toFixed(4);
+                
+                log(`✅ DeFi 报价获取成功:`);
+                log(`   📊 ${amount} ${fromToken} → ${output} ${toToken}`);
+                log(`   📈 汇率: 1 ${fromToken} = ${rate} ${toToken}`);
+                log(`   💸 手续费: 0.3%`);
+                log(`   ⏱️  预计执行时间: 15-30秒`);
+            }, 900);
+        }
+
+        function getBridgeQuote() {
+            const targetChain = currentChain === 'solana' ? 'ethereum' : 'solana';
+            log(`🌉 正在获取 ${currentChain} → ${targetChain} 跨链报价...`);
+            
+            setTimeout(() => {
+                const amount = '100';
+                const fee = (Math.random() * 5 + 1).toFixed(2);
+                const time = Math.floor(Math.random() * 10 + 5);
+                
+                log(`✅ 跨链桥报价获取成功:`);
+                log(`   💰 转账金额: ${amount} USDC`);
+                log(`   💸 跨链手续费: ${fee} USDC`);
+                log(`   ⏱️  预计到账时间: ${time} 分钟`);
+                log(`   🌉 推荐协议: Wormhole`);
+                log(`   🔒 安全等级: 高`);
+            }, 1100);
+        }
+
+        function getNFTs() {
+            log(`🎨 正在获取 ${currentChain} NFT 列表...`);
+            
+            setTimeout(() => {
+                const nfts = [
+                    { name: 'CryptoPunk #1234', collection: 'CryptoPunks', value: '15.5 ETH' },
+                    { name: 'Bored Ape #5678', collection: 'BAYC', value: '12.3 ETH' },
+                    { name: 'Azuki #9012', collection: 'Azuki', value: '8.7 ETH' }
+                ];
+                
+                log(`✅ NFT 列表获取成功 (${nfts.length} 个):`);
+                nfts.forEach((nft, index) => {
+                    log(`   🖼️  ${index + 1}. ${nft.name}`);
+                    log(`      📁 集合: ${nft.collection}`);
+                    log(`      💎 估值: ${nft.value}`);
+                });
+            }, 700);
+        }
+
+        function showChainInfo() {
+            log(`ℹ️  ${currentChain} 网络信息:`);
+            
+            const chainInfo = getChainInfo(currentChain);
+            Object.entries(chainInfo).forEach(([key, value]) => {
+                log(`   ${key}: ${value}`);
+            });
+        }
+
+        // 辅助函数
+        function generateMockAddress(chain) {
+            if (chain === 'solana') {
+                return '7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU';
+            } else if (chain === 'aptos') {
+                return '0x1234567890abcdef1234567890abcdef12345678';
+            } else {
+                return '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6';
+            }
+        }
+
+        function getChainSymbol(chain) {
+            const symbols = {
+                ethereum: 'ETH',
+                polygon: 'MATIC',
+                arbitrum: 'ETH',
+                solana: 'SOL',
+                aptos: 'APT'
+            };
+            return symbols[chain] || 'ETH';
+        }
+
+        function getChainTokens(chain) {
+            const tokens = {
+                ethereum: ['USDC', 'USDT', 'DAI', 'WBTC'],
+                polygon: ['USDC', 'USDT', 'DAI', 'WETH'],
+                arbitrum: ['USDC', 'USDT', 'DAI', 'WETH'],
+                solana: ['USDC', 'USDT', 'RAY', 'SRM'],
+                aptos: ['USDC', 'USDT', 'APT', 'WETH']
+            };
+            return tokens[chain] || [];
+        }
+
+        function getGasEstimate(chain) {
+            const estimates = {
+                ethereum: {
+                    slow: '25 Gwei', standard: '30 Gwei', fast: '35 Gwei', instant: '40 Gwei',
+                    slowTime: '5-10 min', standardTime: '2-5 min', fastTime: '1-2 min', instantTime: '< 1 min'
+                },
+                polygon: {
+                    slow: '30 Gwei', standard: '35 Gwei', fast: '40 Gwei', instant: '50 Gwei',
+                    slowTime: '30-60 sec', standardTime: '15-30 sec', fastTime: '5-15 sec', instantTime: '< 5 sec'
+                },
+                arbitrum: {
+                    slow: '0.1 Gwei', standard: '0.2 Gwei', fast: '0.3 Gwei', instant: '0.5 Gwei',
+                    slowTime: '5-10 sec', standardTime: '2-5 sec', fastTime: '1-2 sec', instantTime: '< 1 sec'
+                },
+                solana: {
+                    slow: '5000 lamports', standard: '5000 lamports', fast: '5000 lamports', instant: '5000 lamports',
+                    slowTime: '10-20 sec', standardTime: '5-10 sec', fastTime: '2-5 sec', instantTime: '< 2 sec'
+                },
+                aptos: {
+                    slow: '100 gas', standard: '120 gas', fast: '150 gas', instant: '200 gas',
+                    slowTime: '5-10 sec', standardTime: '2-5 sec', fastTime: '1-2 sec', instantTime: '< 1 sec'
+                }
+            };
+            return estimates[chain] || estimates.ethereum;
+        }
+
+        function getChainInfo(chain) {
+            const info = {
+                ethereum: {
+                    '🌐 网络名称': 'Ethereum Mainnet',
+                    '🆔 Chain ID': '1',
+                    '💰 原生代币': 'ETH',
+                    '🔗 区块浏览器': 'etherscan.io',
+                    '⚡ 类型': 'EVM'
+                },
+                polygon: {
+                    '🌐 网络名称': 'Polygon Mainnet',
+                    '🆔 Chain ID': '137',
+                    '💰 原生代币': 'MATIC',
+                    '🔗 区块浏览器': 'polygonscan.com',
+                    '⚡ 类型': 'EVM Layer2'
+                },
+                arbitrum: {
+                    '🌐 网络名称': 'Arbitrum One',
+                    '🆔 Chain ID': '42161',
+                    '💰 原生代币': 'ETH',
+                    '🔗 区块浏览器': 'arbiscan.io',
+                    '⚡ 类型': 'EVM Layer2'
+                },
+                solana: {
+                    '🌐 网络名称': 'Solana Mainnet',
+                    '🆔 Chain ID': 'mainnet-beta',
+                    '💰 原生代币': 'SOL',
+                    '🔗 区块浏览器': 'solscan.io',
+                    '⚡ 类型': 'Non-EVM'
+                },
+                aptos: {
+                    '🌐 网络名称': 'Aptos Mainnet',
+                    '🆔 Chain ID': '1',
+                    '💰 原生代币': 'APT',
+                    '🔗 区块浏览器': 'aptoscan.com',
+                    '⚡ 类型': 'Non-EVM'
+                }
+            };
+            return info[chain] || info.ethereum;
+        }
+
+        // 初始化
+        log('🚀 ShieldWallet 演示系统已启动');
+        log('💡 选择不同的区块链网络，体验多链钱包功能');
+    </script>
+</body>
+</html>

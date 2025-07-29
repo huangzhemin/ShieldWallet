@@ -2,6 +2,11 @@ import { CryptoUtils } from '../utils/crypto';
 import { ValidationUtils } from '../utils/validation';
 import { StorageService } from './storage';
 import { NetworkService } from './network';
+import { ChainManager, chainManager } from './ChainManager';
+import { DeFiService } from './DeFiService';
+import { BridgeService } from './BridgeService';
+import { NFTService } from './NFTService';
+import { GasService } from './GasService';
 
 /**
  * 钱包接口
@@ -11,6 +16,8 @@ interface Wallet {
   encryptedPrivateKey: string;
   mnemonic?: string;
   createdAt: number;
+  multiChainAddresses?: { [chainId: string]: string };
+  encryptedMultiChainKeys?: { [chainId: string]: string };
 }
 
 /**
@@ -30,11 +37,17 @@ interface Transaction {
 export class WalletService {
   private static currentWallet: Wallet | null = null;
   private static isUnlocked: boolean = false;
+  private static chainManager: ChainManager = chainManager;
+  private static defiService: DeFiService = new DeFiService(WalletService.chainManager);
+  private static bridgeService: BridgeService = new BridgeService(WalletService.chainManager);
+  private static nftService: NFTService = new NFTService(WalletService.chainManager);
+  private static gasService: GasService = new GasService(WalletService.chainManager);
+  private static multiChainWallets: { [chainId: string]: { address: string; privateKey: string } } = {};
 
   /**
    * 创建新钱包
    */
-  static async createWallet(password: string): Promise<{ wallet: Wallet; mnemonic: string }> {
+  static async createWallet(password: string): Promise<{ wallet: Wallet; mnemonic: string; multiChainAddresses: { [chainId: string]: string } }> {
     // 验证密码强度
     const passwordValidation = ValidationUtils.isStrongPassword(password);
     if (!passwordValidation.isValid) {
@@ -48,24 +61,38 @@ export class WalletService {
       // 从助记词生成私钥和地址
       const { privateKey, address } = await this.generateWalletFromMnemonic(mnemonic);
       
+      // 生成多链钱包
+      const multiChainWallets = await this.chainManager.generateMultiChainWallet(mnemonic);
+      
       // 加密私钥
       const encryptedPrivateKey = await CryptoUtils.encrypt(privateKey, password);
+      
+      // 加密多链私钥
+      const encryptedMultiChainKeys: { [chainId: string]: string } = {};
+      for (const [chainId, chainWallet] of Object.entries(multiChainWallets)) {
+        encryptedMultiChainKeys[chainId] = await CryptoUtils.encrypt(chainWallet.privateKey, password);
+      }
       
       // 创建钱包对象
       const wallet: Wallet = {
         address,
         encryptedPrivateKey,
         mnemonic: await CryptoUtils.encrypt(mnemonic, password),
-        createdAt: Date.now()
+        createdAt: Date.now(),
+        multiChainAddresses: Object.fromEntries(
+          Object.entries(multiChainWallets).map(([chainId, wallet]) => [chainId, wallet.address])
+        ),
+        encryptedMultiChainKeys
       };
       
       // 保存到存储
       await StorageService.saveWallet(wallet);
       
       this.currentWallet = wallet;
+      this.multiChainWallets = multiChainWallets;
       this.isUnlocked = true;
       
-      return { wallet, mnemonic };
+      return { wallet, mnemonic, multiChainAddresses: wallet.multiChainAddresses || {} };
     } catch (error) {
       throw new Error(`创建钱包失败: ${error}`);
     }
@@ -74,7 +101,7 @@ export class WalletService {
   /**
    * 导入钱包
    */
-  static async importWallet(importData: string, importType: 'mnemonic' | 'privateKey', password: string): Promise<Wallet> {
+  static async importWallet(importData: string, importType: 'mnemonic' | 'privateKey', password: string): Promise<{ wallet: Wallet; multiChainAddresses: { [chainId: string]: string } }> {
     // 验证密码强度
     const passwordValidation = ValidationUtils.isStrongPassword(password);
     if (!passwordValidation.isValid) {
@@ -85,6 +112,7 @@ export class WalletService {
       let privateKey: string;
       let address: string;
       let mnemonic: string | undefined;
+      let multiChainWallets: { [chainId: string]: { address: string; privateKey: string } } = {};
 
       if (importType === 'mnemonic') {
         if (!ValidationUtils.isValidMnemonic(importData)) {
@@ -95,6 +123,9 @@ export class WalletService {
         const walletData = await this.generateWalletFromMnemonic(mnemonic);
         privateKey = walletData.privateKey;
         address = walletData.address;
+        
+        // 生成多链钱包
+        multiChainWallets = await this.chainManager.generateMultiChainWallet(mnemonic);
       } else {
         if (!ValidationUtils.isValidPrivateKey(importData)) {
           throw new Error('无效的私钥格式');
@@ -107,21 +138,32 @@ export class WalletService {
       // 加密私钥
       const encryptedPrivateKey = await CryptoUtils.encrypt(privateKey, password);
       
+      // 加密多链私钥
+      const encryptedMultiChainKeys: { [chainId: string]: string } = {};
+      for (const [chainId, chainWallet] of Object.entries(multiChainWallets)) {
+        encryptedMultiChainKeys[chainId] = await CryptoUtils.encrypt(chainWallet.privateKey, password);
+      }
+      
       // 创建钱包对象
       const wallet: Wallet = {
         address,
         encryptedPrivateKey,
         mnemonic: mnemonic ? await CryptoUtils.encrypt(mnemonic, password) : undefined,
-        createdAt: Date.now()
+        createdAt: Date.now(),
+        multiChainAddresses: Object.fromEntries(
+          Object.entries(multiChainWallets).map(([chainId, wallet]) => [chainId, wallet.address])
+        ),
+        encryptedMultiChainKeys
       };
       
       // 保存到存储
       await StorageService.saveWallet(wallet);
       
       this.currentWallet = wallet;
+      this.multiChainWallets = multiChainWallets;
       this.isUnlocked = true;
       
-      return wallet;
+      return { wallet, multiChainAddresses: wallet.multiChainAddresses || {} };
     } catch (error) {
       throw new Error(`导入钱包失败: ${error}`);
     }
@@ -139,6 +181,15 @@ export class WalletService {
       
       // 尝试解密私钥来验证密码
       await CryptoUtils.decrypt(wallet.encryptedPrivateKey, password);
+      
+      // 解密多链私钥
+        if (wallet.encryptedMultiChainKeys) {
+          for (const [chainId, encryptedKey] of Object.entries(wallet.encryptedMultiChainKeys)) {
+            const privateKey = await CryptoUtils.decrypt(encryptedKey as string, password);
+            const address = wallet.multiChainAddresses?.[chainId] || '';
+            this.multiChainWallets[chainId] = { address, privateKey };
+          }
+        }
       
       this.currentWallet = wallet;
       this.isUnlocked = true;
@@ -319,5 +370,25 @@ export class WalletService {
     } catch (error) {
       throw new Error('密码错误');
     }
+  }
+
+  // DeFi服务访问器
+  static get defi() {
+    return WalletService.defiService;
+  }
+
+  // 跨链桥服务访问器
+  static get bridge() {
+    return WalletService.bridgeService;
+  }
+
+  // NFT服务访问器
+  static get nft() {
+    return WalletService.nftService;
+  }
+
+  // Gas服务访问器
+  static get gas() {
+    return WalletService.gasService;
   }
 }
