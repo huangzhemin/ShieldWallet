@@ -38,10 +38,10 @@ export class WalletService {
   private static currentWallet: Wallet | null = null;
   private static isUnlocked: boolean = false;
   private static chainManager: ChainManager = chainManager;
-  private static defiService: DeFiService = new DeFiService(WalletService.chainManager);
+  private static defiService: DeFiService = new DeFiService();
   private static bridgeService: BridgeService = new BridgeService(WalletService.chainManager);
-  private static nftService: NFTService = new NFTService(WalletService.chainManager);
-  private static gasService: GasService = new GasService(WalletService.chainManager);
+  private static nftService: NFTService = new NFTService();
+  private static gasService: GasService = new GasService();
   private static multiChainWallets: { [chainId: string]: { address: string; privateKey: string } } = {};
 
   /**

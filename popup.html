@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShieldWallet</title>
+  <link rel="stylesheet" href="styles/popup.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <img src="assets/icon48.svg" alt="ShieldWallet Logo" class="logo">
+      <h1>ShieldWallet</h1>
+    </header>
+
+    <main>
+      <!-- 初始化/登录界面 -->
+      <div class="screen" id="welcomeScreen">
+        <div class="welcome-content">
+          <h2>欢迎使用ShieldWallet</h2>
+          <div class="btn-group">
+            <button id="createWalletBtn" class="btn btn-primary">创建钱包</button>
+            <button id="importWalletBtn" class="btn btn-secondary">导入钱包</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 钱包主页面 -->
+      <div class="screen hidden" id="walletScreen">
+        <div class="account-info">
+          <div class="account-address">
+            <span id="accountAddressShort">0x1234...5678</span>
+            <button id="copyAddressBtn" class="icon-btn">📋</button>
+          </div>
+          <div class="balance-container">
+            <h3>账户余额</h3>
+            <div class="balance" id="ethBalance">0.00 ETH</div>
+          </div>
+        </div>
+
+        <div class="action-buttons">
+          <button id="sendBtn" class="action-btn">发送</button>
+          <button id="receiveBtn" class="action-btn">接收</button>
+          <button id="historyBtn" class="action-btn">历史</button>
+        </div>
+
+        <div class="token-list">
+          <h3>代币</h3>
+          <div class="token-list-container" id="tokenList">
+            <!-- 代币列表将通过JavaScript动态填充 -->
+          </div>
+          <button id="addTokenBtn" class="btn btn-small">添加代币</button>
+        </div>
+      </div>
+
+      <!-- 创建钱包页面 -->
+      <div class="screen hidden" id="createWalletScreen">
+        <h2>创建新钱包</h2>
+        <form id="createWalletForm">
+          <div class="form-group">
+            <label for="newPassword">设置密码</label>
+            <input type="password" id="newPassword" required>
+          </div>
+          <div class="form-group">
+            <label for="confirmPassword">确认密码</label>
+            <input type="password" id="confirmPassword" required>
+          </div>
+          <div class="btn-group">
+            <button type="button" class="btn btn-secondary" id="backFromCreateBtn">返回</button>
+            <button type="submit" class="btn btn-primary">创建</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- 导入钱包页面 -->
+      <div class="screen hidden" id="importWalletScreen">
+        <h2>导入钱包</h2>
+        <form id="importWalletForm">
+          <div class="form-group">
+            <label for="importType">导入方式</label>
+            <select id="importType">
+              <option value="mnemonic">助记词</option>
+              <option value="privateKey">私钥</option>
+            </select>
+          </div>
+          <div class="form-group" id="mnemonicInputGroup">
+            <label for="mnemonic">助记词</label>
+            <textarea id="mnemonic" rows="3" placeholder="请输入12个单词，以空格分隔"></textarea>
+          </div>
+          <div class="form-group hidden" id="privateKeyInputGroup">
+            <label for="privateKey">私钥</label>
+            <input type="text" id="privateKey" placeholder="请输入以0x开头的私钥">
+          </div>
+          <div class="form-group">
+            <label for="importPassword">设置密码</label>
+            <input type="password" id="importPassword" required>
+          </div>
+          <div class="form-group">
+            <label for="importConfirmPassword">确认密码</label>
+            <input type="password" id="importConfirmPassword" required>
+          </div>
+          <div class="btn-group">
+            <button type="button" class="btn btn-secondary" id="backFromImportBtn">返回</button>
+            <button type="submit" class="btn btn-primary">导入</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- 发送交易页面 -->
+      <div class="screen hidden" id="sendScreen">
+        <h2>发送资产</h2>
+        <form id="sendForm">
+          <div class="form-group">
+            <label for="recipientAddress">收款地址</label>
+            <input type="text" id="recipientAddress" placeholder="0x..." required>
+          </div>
+          <div class="form-group">
+            <label for="amount">金额</label>
+            <input type="number" id="amount" step="0.000001" min="0" required>
+            <select id="assetSelect">
+              <option value="ETH">ETH</option>
+              <!-- 其他代币将通过JavaScript动态填充 -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="gasPrice">Gas价格 (Gwei)</label>
+            <input type="number" id="gasPrice" value="5" min="1" required>
+          </div>
+          <div class="btn-group">
+            <button type="button" class="btn btn-secondary" id="backFromSendBtn">取消</button>
+            <button type="submit" class="btn btn-primary">发送</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- 接收页面 -->
+      <div class="screen hidden" id="receiveScreen">
+        <h2>接收资产</h2>
+        <div class="qr-container">
+          <div id="addressQRCode"></div>
+        </div>
+        <div class="address-container">
+          <p>您的钱包地址:</p>
+          <div class="address-box">
+            <span id="fullAddress">0x0000000000000000000000000000000000000000</span>
+            <button id="copyFullAddressBtn" class="icon-btn">📋</button>
+          </div>
+        </div>
+        <div class="btn-group">
+          <button type="button" class="btn btn-secondary" id="backFromReceiveBtn">返回</button>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <div class="network-selector">
+        <select id="networkSelect">
+          <option value="1">以太坊主网</option>
+          <option value="11155111">Sepolia测试网</option>
+          <option value="5">Goerli测试网</option>
+        </select>
+      </div>
+    </footer>
+  </div>
+
+  <script src="scripts/popup.js" type="module"></script>
+</body>
+</html>

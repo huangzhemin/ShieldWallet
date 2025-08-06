@@ -1,0 +1,320 @@
+/* ShieldWallet Popup Styles */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  width: 360px;
+  height: 600px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #333;
+  overflow: hidden;
+}
+
+.container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.header {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+  width: 32px;
+  height: 32px;
+}
+
+.header h1 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #4F46E5;
+}
+
+/* Main Content */
+main {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.screen {
+  display: block;
+}
+
+.screen.hidden {
+  display: none;
+}
+
+/* Welcome Screen */
+.welcome-content {
+  text-align: center;
+  padding: 40px 0;
+}
+
+.welcome-content h2 {
+  color: white;
+  margin-bottom: 30px;
+  font-size: 24px;
+}
+
+/* Account Info */
+.account-info {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.account-address {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  font-family: monospace;
+  font-size: 14px;
+}
+
+.balance-container h3 {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.balance {
+  font-size: 28px;
+  font-weight: 600;
+  color: #4F46E5;
+}
+
+/* Buttons */
+.btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+}
+
+.btn-primary {
+  background: #4F46E5;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #4338CA;
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.9);
+  color: #4F46E5;
+  border: 1px solid #4F46E5;
+}
+
+.btn-secondary:hover {
+  background: #4F46E5;
+  color: white;
+}
+
+.btn-small {
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
+.btn-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.btn-group .btn {
+  flex: 1;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.icon-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.action-btn {
+  background: rgba(255, 255, 255, 0.95);
+  border: none;
+  border-radius: 8px;
+  padding: 16px 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #4F46E5;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.action-btn:hover {
+  background: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Forms */
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: white;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  background: white;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: #4F46E5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Token List */
+.token-list {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.token-list h3 {
+  margin-bottom: 12px;
+  color: #333;
+}
+
+.token-list-container {
+  margin-bottom: 12px;
+}
+
+/* QR Code */
+.qr-container {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.address-container {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.address-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 12px;
+  word-break: break-all;
+}
+
+/* Footer */
+footer {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 12px 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.network-selector select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+/* Responsive */
+@media (max-width: 320px) {
+  body {
+    width: 320px;
+  }
+  
+  .container {
+    padding: 0 12px;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.screen {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}

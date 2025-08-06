@@ -2,7 +2,7 @@ import { ChainAdapter, ChainConfig, ChainType, TransactionParams, TransactionRes
 import { EVMAdapter } from '../adapters/EVMAdapter';
 import { SolanaAdapter } from '../adapters/SolanaAdapter';
 import { AptosAdapter } from '../adapters/AptosAdapter';
-import { SUPPORTED_CHAINS } from '../config/chains';
+import { CHAIN_CONFIGS, SUPPORTED_CHAINS } from '../config/chains';
 
 /**
  * 多链管理器
@@ -20,8 +20,7 @@ export class ChainManager {
    * 初始化所有链适配器
    */
   private initializeAdapters(): void {
-    Object.values(SUPPORTED_CHAINS).forEach((config) => {
-      const chainConfig = config as ChainConfig;
+    Object.values(CHAIN_CONFIGS).forEach((chainConfig) => {
       let adapter: ChainAdapter;
 
       switch (chainConfig.type) {
@@ -93,7 +92,7 @@ export class ChainManager {
    * 获取所有支持的链
    */
   getSupportedChains(): ChainConfig[] {
-    return Object.values(SUPPORTED_CHAINS);
+    return Object.values(CHAIN_CONFIGS);
   }
 
   /**

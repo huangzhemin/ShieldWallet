@@ -154,6 +154,11 @@ export const CHAIN_CONFIGS: { [key: string]: ChainConfig } = {
 };
 
 /**
+ * 支持的链列表
+ */
+export const SUPPORTED_CHAINS = Object.keys(CHAIN_CONFIGS);
+
+/**
  * 获取所有支持的链
  */
 export function getAllChains(): ChainConfig[] {
@@ -196,7 +201,7 @@ export function getChainConfig(chainId: string): ChainConfig | undefined {
 }
 
 /**
- * 验证链ID是否支持
+ * 检查是否支持指定链
  */
 export function isSupportedChain(chainId: string): boolean {
   return chainId in CHAIN_CONFIGS;

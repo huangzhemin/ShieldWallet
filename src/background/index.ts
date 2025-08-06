@@ -79,7 +79,7 @@ async function importWallet(data: any): Promise<any> {
   try {
     const { type, value, password } = data;
     const result = await WalletService.importWallet(value, type, password);
-    return { success: true, address: result.address };
+    return { success: true, address: result.wallet.address };
   } catch (error) {
     console.error('导入钱包出错:', error);
     return { success: false, error: '导入钱包失败' };

@@ -403,6 +403,284 @@
 
     <script>
         let currentChain = 'ethereum';
+        let walletService = null;
+        
+        // 模拟钱包服务（演示用）
+        const mockWalletService = {
+            isUnlocked: () => walletService !== null,
+            getCurrentAddress: () => walletService ? generateMockAddress(currentChain) : null,
+            createWallet: async (password) => {
+                const address = generateMockAddress(currentChain);
+                const mnemonic = 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
+                const multiChainAddresses = {
+                    ethereum: generateMockAddress('ethereum'),
+                    polygon: generateMockAddress('polygon'),
+                    arbitrum: generateMockAddress('arbitrum'),
+                    solana: generateMockAddress('solana'),
+                    aptos: generateMockAddress('aptos')
+                };
+                return { address, mnemonic, multiChainAddresses };
+            },
+            chainManager: {
+                getBalance: async (chain, address) => (Math.random() * 10).toFixed(4),
+                getNativeTokenSymbol: (chain) => getChainSymbol(chain),
+                getMultiChainBalances: async () => ({
+                    ethereum: { balance: (Math.random() * 5).toFixed(4) },
+                    polygon: { balance: (Math.random() * 100).toFixed(2) },
+                    solana: { balance: (Math.random() * 50).toFixed(3) }
+                }),
+                getAdapter: (chain) => ({ connected: true })
+            },
+            gas: {
+                estimateGas: async (chain, txParams) => ({
+                    gasLimit: '21000',
+                    gasPrice: {
+                        slow: '25', standard: '30', fast: '35', instant: '40'
+                    },
+                    estimatedTime: {
+                        slow: '5-10 min', standard: '2-5 min', fast: '1-2 min', instant: '< 1 min'
+                    },
+                    estimatedCost: {
+                        slow: '0.000525', standard: '0.00063', fast: '0.000735', instant: '0.00084'
+                    },
+                    nativeTokenSymbol: getChainSymbol(chain)
+                }),
+                simulateTransaction: async (chain, txParams) => ({
+                    success: Math.random() > 0.2,
+                    gasUsed: Math.floor(Math.random() * 50000 + 21000).toString(),
+                    error: Math.random() > 0.2 ? null : '余额不足',
+                    returnValue: '0x',
+                    logs: []
+                })
+            },
+            defi: {
+                getSwapQuote: async (chain, params) => ({
+                    inputAmount: params.amount,
+                    inputToken: params.fromToken,
+                    outputAmount: (parseFloat(params.amount) * (Math.random() * 0.001 + 0.0005)).toFixed(4),
+                    outputToken: params.toToken,
+                    rate: (Math.random() * 0.001 + 0.0005).toFixed(6),
+                    fee: '0.3%',
+                    priceImpact: (Math.random() * 2).toFixed(2),
+                    protocol: 'Uniswap V3',
+                    estimatedTime: '15-30秒'
+                }),
+                getSupportedProtocols: (chain) => ['Uniswap', 'SushiSwap', 'PancakeSwap']
+            },
+            bridge: {
+                getBridgeQuote: async (params) => {
+                    const isSvmToEvm = params.fromChain === 'solana' && ['ethereum', 'polygon', 'arbitrum'].includes(params.toChain);
+                    const isEvmToSvm = ['ethereum', 'polygon', 'arbitrum'].includes(params.fromChain) && params.toChain === 'solana';
+                    
+                    // 根据跨链方向选择最优协议
+                    let protocol = 'Wormhole';
+                    let bridgeFee = 0.02;
+                    let estimatedTime = '5-10';
+                    
+                    if (isSvmToEvm) {
+                        protocol = 'Wormhole (SVM→EVM优化)';
+                        bridgeFee = 0.015; // SVM到EVM费用更低
+                        estimatedTime = '3-8';
+                    } else if (isEvmToSvm) {
+                        protocol = 'Portal Bridge';
+                        bridgeFee = 0.025;
+                        estimatedTime = '8-15';
+                    }
+                    
+                    const outputAmount = (parseFloat(params.amount) * (1 - bridgeFee)).toFixed(4);
+                    const feeAmount = (parseFloat(params.amount) * bridgeFee).toFixed(4);
+                    
+                    return {
+                        inputAmount: params.amount,
+                        inputToken: params.token,
+                        outputAmount,
+                        outputToken: params.token,
+                        fee: `${feeAmount} ${params.token}`,
+                        bridgeFeePercentage: `${(bridgeFee * 100).toFixed(1)}%`,
+                        estimatedTime: `${estimatedTime} 分钟`,
+                        protocol,
+                        securityLevel: '高',
+                        route: [params.fromChain, params.toChain],
+                        // SVM->EVM 特殊优化信息
+                        svmOptimization: isSvmToEvm ? {
+                            batchProcessing: true,
+                            parallelVerification: true,
+                            optimizedGasUsage: true,
+                            estimatedSavings: '25-40%'
+                        } : null,
+                        // Gas费用详情
+                        gasCosts: {
+                            sourceChainGas: this.estimateBridgeGas(params.fromChain, 'source'),
+                            destinationChainGas: this.estimateBridgeGas(params.toChain, 'destination'),
+                            totalGasCost: this.calculateTotalBridgeGas(params.fromChain, params.toChain)
+                        }
+                    };
+                },
+                
+                estimateBridgeGas: (chain, type) => {
+                    const gasEstimates = {
+                        ethereum: {
+                            source: { gasLimit: '150000', gasPrice: '30 Gwei', cost: '0.0045 ETH' },
+                            destination: { gasLimit: '80000', gasPrice: '30 Gwei', cost: '0.0024 ETH' }
+                        },
+                        polygon: {
+                            source: { gasLimit: '120000', gasPrice: '35 Gwei', cost: '0.0042 MATIC' },
+                            destination: { gasLimit: '60000', gasPrice: '35 Gwei', cost: '0.0021 MATIC' }
+                        },
+                        arbitrum: {
+                            source: { gasLimit: '100000', gasPrice: '0.3 Gwei', cost: '0.00003 ETH' },
+                            destination: { gasLimit: '50000', gasPrice: '0.3 Gwei', cost: '0.000015 ETH' }
+                        },
+                        solana: {
+                            source: { gasLimit: '1', gasPrice: '5000 lamports', cost: '0.000005 SOL' },
+                            destination: { gasLimit: '1', gasPrice: '5000 lamports', cost: '0.000005 SOL' }
+                        }
+                    };
+                    return gasEstimates[chain]?.[type] || gasEstimates.ethereum[type];
+                },
+                
+                calculateTotalBridgeGas: (fromChain, toChain) => {
+                    const sourceGas = mockWalletService.bridge.estimateBridgeGas(fromChain, 'source');
+                    const destGas = mockWalletService.bridge.estimateBridgeGas(toChain, 'destination');
+                    
+                    return {
+                        sourceChain: `${sourceGas.cost}`,
+                        destinationChain: `${destGas.cost}`,
+                        totalEstimate: '总计约 $8-15 USD'
+                    };
+                },
+                
+                simulateBridgeTransaction: async (params) => {
+                    const isSvmToEvm = params.fromChain === 'solana' && ['ethereum', 'polygon', 'arbitrum'].includes(params.toChain);
+                    
+                    // 模拟跨链交易步骤
+                    const steps = [];
+                    
+                    if (isSvmToEvm) {
+                        steps.push(
+                            { step: 1, action: 'Solana 锁定代币', status: 'pending', gasUsed: '5000 lamports', time: '2-5秒' },
+                            { step: 2, action: 'Wormhole 验证签名', status: 'pending', gasUsed: '0', time: '30-60秒' },
+                            { step: 3, action: 'EVM 链铸造代币', status: 'pending', gasUsed: '80000 gas', time: '1-3分钟' },
+                            { step: 4, action: '跨链完成确认', status: 'pending', gasUsed: '0', time: '即时' }
+                        );
+                    } else {
+                        steps.push(
+                            { step: 1, action: 'EVM 锁定代币', status: 'pending', gasUsed: '150000 gas', time: '1-2分钟' },
+                            { step: 2, action: 'Wormhole 验证签名', status: 'pending', gasUsed: '0', time: '2-5分钟' },
+                            { step: 3, action: 'Solana 铸造代币', status: 'pending', gasUsed: '5000 lamports', time: '10-30秒' },
+                            { step: 4, action: '跨链完成确认', status: 'pending', gasUsed: '0', time: '即时' }
+                        );
+                    }
+                    
+                    return {
+                        success: Math.random() > 0.1, // 90% 成功率
+                        transactionId: `0x${Math.random().toString(16).substr(2, 64)}`,
+                        steps,
+                        estimatedTotalTime: isSvmToEvm ? '3-8分钟' : '8-15分钟',
+                        optimizations: isSvmToEvm ? [
+                            '✅ SVM 并行处理优化',
+                            '✅ 批量验证降低成本',
+                            '✅ 智能路由选择',
+                            '✅ Gas费用预估优化'
+                        ] : [
+                            '✅ EVM 兼容性优化',
+                            '✅ 自动重试机制',
+                            '✅ 滑点保护'
+                        ]
+                    };
+                },
+                
+                getSupportedBridges: () => ['Wormhole', 'LayerZero', 'Allbridge', 'Portal Bridge', 'Celer cBridge']
+            },
+            nft: {
+                getUserNFTs: async (chain, address) => {
+                    const mockNFTs = [
+                        {
+                            name: 'CryptoPunk #1234',
+                            collection: 'CryptoPunks',
+                            tokenId: '1234',
+                            contractAddress: '0xb47e3cd837dDF8e4c57F05d70Ab865de6e193BBB',
+                            metadata: {
+                                description: 'A unique CryptoPunk character',
+                                attributes: [{ trait_type: 'Type', value: 'Human' }]
+                            },
+                            marketData: { floorPrice: '15.5 ETH' }
+                        },
+                        {
+                            name: 'Bored Ape #5678',
+                            collection: 'BAYC',
+                            tokenId: '5678',
+                            contractAddress: '0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D',
+                            metadata: {
+                                description: 'A bored ape from the yacht club',
+                                attributes: [{ trait_type: 'Background', value: 'Blue' }]
+                            },
+                            marketData: { floorPrice: '12.3 ETH' }
+                        }
+                    ];
+                    return Math.random() > 0.3 ? mockNFTs : [];
+                }
+            }
+        };
+        
+        // 模拟链配置
+        const SUPPORTED_CHAINS = {
+            ethereum: {
+                name: 'Ethereum Mainnet',
+                chainId: '1',
+                nativeCurrency: { symbol: 'ETH' },
+                rpcUrl: 'https://mainnet.infura.io/v3/...',
+                blockExplorer: 'https://etherscan.io',
+                type: 'EVM',
+                category: 'mainnet'
+            },
+            polygon: {
+                name: 'Polygon Mainnet',
+                chainId: '137',
+                nativeCurrency: { symbol: 'MATIC' },
+                rpcUrl: 'https://polygon-rpc.com',
+                blockExplorer: 'https://polygonscan.com',
+                type: 'EVM',
+                category: 'layer2'
+            },
+            arbitrum: {
+                name: 'Arbitrum One',
+                chainId: '42161',
+                nativeCurrency: { symbol: 'ETH' },
+                rpcUrl: 'https://arb1.arbitrum.io/rpc',
+                blockExplorer: 'https://arbiscan.io',
+                type: 'EVM',
+                category: 'layer2'
+            },
+            solana: {
+                name: 'Solana Mainnet',
+                chainId: 'mainnet-beta',
+                nativeCurrency: { symbol: 'SOL' },
+                rpcUrl: 'https://api.mainnet-beta.solana.com',
+                blockExplorer: 'https://solscan.io',
+                type: 'Non-EVM',
+                category: 'mainnet'
+            },
+            aptos: {
+                name: 'Aptos Mainnet',
+                chainId: '1',
+                nativeCurrency: { symbol: 'APT' },
+                rpcUrl: 'https://fullnode.mainnet.aptoslabs.com/v1',
+                blockExplorer: 'https://aptoscan.com',
+                type: 'Non-EVM',
+                category: 'mainnet'
+            }
+        };
+        
+        // 初始化钱包服务
+        async function initWalletService() {
+            try {
+                walletService = mockWalletService;
+                log('✅ 钱包服务初始化成功（演示模式）');
+            } catch (error) {
+                log(`❌ 钱包服务初始化失败: ${error.message}`);
+            }
+        }
         
         // 链选择器事件
         document.querySelectorAll('.chain-btn').forEach(btn => {
@@ -423,133 +701,315 @@
             output.scrollTop = output.scrollHeight;
         }
 
-        function createWallet() {
+        async function createWallet() {
+            if (!walletService) {
+                log('❌ 钱包服务未初始化');
+                return;
+            }
+            
             log(`🔐 正在为 ${currentChain} 创建新钱包...`);
             
-            // 模拟钱包创建
-            setTimeout(() => {
-                const mockAddress = generateMockAddress(currentChain);
-                const mockMnemonic = 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
+            try {
+                const password = 'demo123456'; // 演示密码
+                const wallet = await walletService.createWallet(password);
                 
                 log(`✅ 钱包创建成功！`);
-                log(`📍 地址: ${mockAddress}`);
-                log(`🔑 助记词: ${mockMnemonic}`);
+                log(`📍 主地址: ${wallet.address}`);
+                log(`🔑 助记词: ${wallet.mnemonic}`);
+                
+                // 显示多链地址
+                if (wallet.multiChainAddresses) {
+                    log(`🌐 多链地址:`);
+                    Object.entries(wallet.multiChainAddresses).forEach(([chainId, address]) => {
+                        const chainName = getChainName(chainId);
+                        log(`   ${chainName}: ${address}`);
+                    });
+                }
+                
                 log(`⚠️  请安全保存您的助记词`);
-            }, 1000);
+            } catch (error) {
+                log(`❌ 钱包创建失败: ${error.message}`);
+            }
         }
 
-        function getBalance() {
+        async function getBalance() {
+            if (!walletService || !walletService.isUnlocked()) {
+                log('❌ 请先创建并解锁钱包');
+                return;
+            }
+            
             log(`💰 正在查询 ${currentChain} 余额...`);
             
-            setTimeout(() => {
-                const mockBalance = (Math.random() * 10).toFixed(4);
-                const symbol = getChainSymbol(currentChain);
+            try {
+                // 获取当前地址
+                const address = walletService.getCurrentAddress();
+                if (!address) {
+                    log('❌ 未找到当前地址');
+                    return;
+                }
                 
-                log(`✅ 余额查询成功: ${mockBalance} ${symbol}`);
+                // 查询原生代币余额
+                const balance = await walletService.chainManager.getBalance(currentChain, address);
+                const symbol = walletService.chainManager.getNativeTokenSymbol(currentChain);
                 
-                // 模拟代币余额
-                const tokens = getChainTokens(currentChain);
-                tokens.forEach(token => {
-                    const balance = (Math.random() * 1000).toFixed(2);
-                    log(`   💎 ${token}: ${balance}`);
-                });
-            }, 800);
+                log(`✅ 余额查询成功: ${balance} ${symbol}`);
+                log(`📍 地址: ${address}`);
+                
+                // 获取多链余额
+                const multiChainBalances = await walletService.chainManager.getMultiChainBalances();
+                if (Object.keys(multiChainBalances).length > 0) {
+                    log(`🌐 多链余额:`);
+                    Object.entries(multiChainBalances).forEach(([chainId, balanceData]) => {
+                        const chainName = getChainName(chainId);
+                        const chainSymbol = walletService.chainManager.getNativeTokenSymbol(chainId);
+                        log(`   ${chainName}: ${balanceData.balance} ${chainSymbol}`);
+                    });
+                }
+            } catch (error) {
+                log(`❌ 余额查询失败: ${error.message}`);
+            }
         }
 
-        function estimateGas() {
+        async function estimateGas() {
+            if (!walletService) {
+                log('❌ 钱包服务未初始化');
+                return;
+            }
+            
             log(`⛽ 正在估算 ${currentChain} Gas费用...`);
             
-            setTimeout(() => {
-                const gasData = getGasEstimate(currentChain);
+            try {
+                // 构建示例交易参数
+                const txParams = {
+                    to: '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6',
+                    value: '0.01', // 0.01 ETH
+                    data: '0x'
+                };
+                
+                const gasEstimate = await walletService.gas.estimateGas(currentChain, txParams);
                 
                 log(`✅ Gas费用估算完成:`);
-                log(`   🐌 慢速: ${gasData.slow} (${gasData.slowTime})`);
-                log(`   🚶 标准: ${gasData.standard} (${gasData.standardTime})`);
-                log(`   🏃 快速: ${gasData.fast} (${gasData.fastTime})`);
-                log(`   🚀 极速: ${gasData.instant} (${gasData.instantTime})`);
-            }, 600);
+                log(`   ⛽ Gas限制: ${gasEstimate.gasLimit}`);
+                log(`   🐌 慢速: ${gasEstimate.gasPrice.slow} Gwei (${gasEstimate.estimatedTime.slow})`);
+                log(`   🚶 标准: ${gasEstimate.gasPrice.standard} Gwei (${gasEstimate.estimatedTime.standard})`);
+                log(`   🏃 快速: ${gasEstimate.gasPrice.fast} Gwei (${gasEstimate.estimatedTime.fast})`);
+                log(`   🚀 极速: ${gasEstimate.gasPrice.instant} Gwei (${gasEstimate.estimatedTime.instant})`);
+                log(`   💰 预估费用:`);
+                log(`      慢速: ${gasEstimate.estimatedCost.slow} ${gasEstimate.nativeTokenSymbol}`);
+                log(`      标准: ${gasEstimate.estimatedCost.standard} ${gasEstimate.nativeTokenSymbol}`);
+                log(`      快速: ${gasEstimate.estimatedCost.fast} ${gasEstimate.nativeTokenSymbol}`);
+                log(`      极速: ${gasEstimate.estimatedCost.instant} ${gasEstimate.nativeTokenSymbol}`);
+            } catch (error) {
+                log(`❌ Gas费用估算失败: ${error.message}`);
+            }
         }
 
-        function simulateTransaction() {
+        async function simulateTransaction() {
+            if (!walletService) {
+                log('❌ 钱包服务未初始化');
+                return;
+            }
+            
             log(`🧪 正在模拟 ${currentChain} 交易执行...`);
             
-            setTimeout(() => {
-                const success = Math.random() > 0.2; // 80% 成功率
+            try {
+                // 构建示例交易参数
+                const txParams = {
+                    to: '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6',
+                    value: '0.01',
+                    data: '0x'
+                };
                 
-                if (success) {
-                    const gasUsed = Math.floor(Math.random() * 50000 + 21000);
+                const simulation = await walletService.gas.simulateTransaction(currentChain, txParams);
+                
+                if (simulation.success) {
                     log(`✅ 交易模拟成功!`);
-                    log(`   ⛽ 预计Gas消耗: ${gasUsed.toLocaleString()}`);
-                    log(`   💰 预计费用: ${(gasUsed * 0.00000002).toFixed(6)} ${getChainSymbol(currentChain)}`);
+                    log(`   ⛽ 预计Gas消耗: ${parseInt(simulation.gasUsed).toLocaleString()}`);
+                    if (simulation.returnValue) {
+                        log(`   📤 返回值: ${simulation.returnValue}`);
+                    }
+                    if (simulation.logs && simulation.logs.length > 0) {
+                        log(`   📋 事件日志: ${simulation.logs.length} 条`);
+                    }
                 } else {
-                    log(`❌ 交易模拟失败: 余额不足或合约执行错误`);
+                    log(`❌ 交易模拟失败: ${simulation.error}`);
+                    if (simulation.revertReason) {
+                        log(`   🔍 失败原因: ${simulation.revertReason}`);
+                    }
                     log(`   💡 建议检查账户余额和交易参数`);
                 }
-            }, 1200);
+            } catch (error) {
+                log(`❌ 交易模拟失败: ${error.message}`);
+            }
         }
 
-        function getDeFiQuote() {
+        async function getDeFiQuote() {
+            if (!walletService) {
+                log('❌ 钱包服务未初始化');
+                return;
+            }
+            
             log(`🔄 正在获取 ${currentChain} DeFi 交换报价...`);
             
-            setTimeout(() => {
+            try {
                 const fromToken = 'USDC';
-                const toToken = getChainSymbol(currentChain);
+                const toToken = walletService.chainManager.getNativeTokenSymbol(currentChain);
                 const amount = '1000';
-                const rate = (Math.random() * 0.001 + 0.0005).toFixed(6);
-                const output = (parseFloat(amount) * parseFloat(rate)).toFixed(4);
+                
+                const swapParams = {
+                    fromToken,
+                    toToken,
+                    amount,
+                    slippage: 0.5 // 0.5% 滑点
+                };
+                
+                const quote = await walletService.defi.getSwapQuote(currentChain, swapParams);
                 
                 log(`✅ DeFi 报价获取成功:`);
-                log(`   📊 ${amount} ${fromToken} → ${output} ${toToken}`);
-                log(`   📈 汇率: 1 ${fromToken} = ${rate} ${toToken}`);
-                log(`   💸 手续费: 0.3%`);
-                log(`   ⏱️  预计执行时间: 15-30秒`);
-            }, 900);
+                log(`   📊 ${quote.inputAmount} ${quote.inputToken} → ${quote.outputAmount} ${quote.outputToken}`);
+                log(`   📈 汇率: 1 ${quote.inputToken} = ${quote.rate} ${quote.outputToken}`);
+                log(`   💸 手续费: ${quote.fee}`);
+                log(`   📉 价格影响: ${quote.priceImpact}%`);
+                log(`   🏪 协议: ${quote.protocol}`);
+                log(`   ⏱️  预计执行时间: ${quote.estimatedTime}`);
+            } catch (error) {
+                log(`❌ DeFi 报价获取失败: ${error.message}`);
+                // 显示支持的协议
+                const protocols = walletService.defi.getSupportedProtocols(currentChain);
+                if (protocols.length > 0) {
+                    log(`💡 ${currentChain} 支持的协议: ${protocols.join(', ')}`);
+                }
+            }
         }
 
-        function getBridgeQuote() {
+        async function getBridgeQuote() {
+            if (!walletService) {
+                log('❌ 钱包服务未初始化');
+                return;
+            }
+            
             const targetChain = currentChain === 'solana' ? 'ethereum' : 'solana';
             log(`🌉 正在获取 ${currentChain} → ${targetChain} 跨链报价...`);
             
-            setTimeout(() => {
-                const amount = '100';
-                const fee = (Math.random() * 5 + 1).toFixed(2);
-                const time = Math.floor(Math.random() * 10 + 5);
+            try {
+                const bridgeParams = {
+                    fromChain: currentChain,
+                    toChain: targetChain,
+                    token: 'USDC',
+                    amount: '100'
+                };
+                
+                const quote = await walletService.bridge.getBridgeQuote(bridgeParams);
                 
                 log(`✅ 跨链桥报价获取成功:`);
-                log(`   💰 转账金额: ${amount} USDC`);
-                log(`   💸 跨链手续费: ${fee} USDC`);
-                log(`   ⏱️  预计到账时间: ${time} 分钟`);
-                log(`   🌉 推荐协议: Wormhole`);
-                log(`   🔒 安全等级: 高`);
-            }, 1100);
+                log(`   💰 转账金额: ${quote.inputAmount} ${quote.inputToken}`);
+                log(`   📥 到账金额: ${quote.outputAmount} ${quote.outputToken}`);
+                log(`   💸 跨链手续费: ${quote.fee}`);
+                log(`   ⏱️  预计到账时间: ${quote.estimatedTime}`);
+                log(`   🌉 推荐协议: ${quote.protocol}`);
+                log(`   🔒 安全等级: ${quote.securityLevel || '高'}`);
+                
+                if (quote.route && quote.route.length > 0) {
+                    log(`   🛣️  路径: ${quote.route.join(' → ')}`);
+                }
+            } catch (error) {
+                log(`❌ 跨链桥报价获取失败: ${error.message}`);
+                // 显示支持的桥协议
+                const bridges = walletService.bridge.getSupportedBridges();
+                if (bridges.length > 0) {
+                    log(`💡 支持的桥协议: ${bridges.join(', ')}`);
+                }
+            }
         }
 
-        function getNFTs() {
+        async function getNFTs() {
+            if (!walletService || !walletService.isUnlocked()) {
+                log('❌ 请先创建并解锁钱包');
+                return;
+            }
+            
             log(`🎨 正在获取 ${currentChain} NFT 列表...`);
             
-            setTimeout(() => {
-                const nfts = [
-                    { name: 'CryptoPunk #1234', collection: 'CryptoPunks', value: '15.5 ETH' },
-                    { name: 'Bored Ape #5678', collection: 'BAYC', value: '12.3 ETH' },
-                    { name: 'Azuki #9012', collection: 'Azuki', value: '8.7 ETH' }
-                ];
+            try {
+                const address = walletService.getCurrentAddress();
+                if (!address) {
+                    log('❌ 未找到当前地址');
+                    return;
+                }
+                
+                const nfts = await walletService.nft.getUserNFTs(currentChain, address);
+                
+                if (nfts.length === 0) {
+                    log(`📭 未找到 NFT`);
+                    log(`💡 该地址在 ${currentChain} 上暂无 NFT 资产`);
+                    return;
+                }
                 
                 log(`✅ NFT 列表获取成功 (${nfts.length} 个):`);
-                nfts.forEach((nft, index) => {
-                    log(`   🖼️  ${index + 1}. ${nft.name}`);
+                
+                for (let i = 0; i < Math.min(nfts.length, 5); i++) {
+                    const nft = nfts[i];
+                    log(`   🖼️  ${i + 1}. ${nft.name || `#${nft.tokenId}`}`);
                     log(`      📁 集合: ${nft.collection}`);
-                    log(`      💎 估值: ${nft.value}`);
-                });
-            }, 700);
+                    log(`      🆔 Token ID: ${nft.tokenId}`);
+                    log(`      🔗 合约: ${nft.contractAddress}`);
+                    
+                    if (nft.metadata) {
+                        if (nft.metadata.description) {
+                            log(`      📝 描述: ${nft.metadata.description.substring(0, 50)}...`);
+                        }
+                        if (nft.metadata.attributes && nft.metadata.attributes.length > 0) {
+                            log(`      🏷️  属性: ${nft.metadata.attributes.length} 个`);
+                        }
+                    }
+                    
+                    if (nft.marketData && nft.marketData.floorPrice) {
+                        log(`      💎 地板价: ${nft.marketData.floorPrice}`);
+                    }
+                }
+                
+                if (nfts.length > 5) {
+                    log(`   ... 还有 ${nfts.length - 5} 个 NFT`);
+                }
+            } catch (error) {
+                log(`❌ NFT 列表获取失败: ${error.message}`);
+            }
         }
 
         function showChainInfo() {
             log(`ℹ️  ${currentChain} 网络信息:`);
             
-            const chainInfo = getChainInfo(currentChain);
-            Object.entries(chainInfo).forEach(([key, value]) => {
-                log(`   ${key}: ${value}`);
-            });
+            try {
+                const chainConfig = SUPPORTED_CHAINS[currentChain];
+                if (!chainConfig) {
+                    log(`❌ 未找到 ${currentChain} 的配置信息`);
+                    return;
+                }
+                
+                log(`   🌐 网络名称: ${chainConfig.name}`);
+                log(`   🆔 Chain ID: ${chainConfig.chainId}`);
+                log(`   💰 原生代币: ${chainConfig.nativeCurrency.symbol}`);
+                log(`   🔗 RPC URL: ${chainConfig.rpcUrl}`);
+                log(`   🌍 区块浏览器: ${chainConfig.blockExplorer}`);
+                log(`   ⚡ 网络类型: ${chainConfig.type}`);
+                log(`   📂 网络分类: ${chainConfig.category}`);
+                
+                if (chainConfig.testnet) {
+                    log(`   🧪 测试网络: 是`);
+                } else {
+                    log(`   🏭 主网络: 是`);
+                }
+                
+                // 显示适配器状态
+                const adapter = walletService?.chainManager.getAdapter(currentChain);
+                if (adapter) {
+                    log(`   ✅ 适配器状态: 已连接`);
+                } else {
+                    log(`   ❌ 适配器状态: 未连接`);
+                }
+            } catch (error) {
+                log(`❌ 获取链信息失败: ${error.message}`);
+            }
         }
 
         // 辅助函数
@@ -562,7 +1022,7 @@
                 return '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6';
             }
         }
-
+        
         function getChainSymbol(chain) {
             const symbols = {
                 ethereum: 'ETH',
@@ -573,88 +1033,28 @@
             };
             return symbols[chain] || 'ETH';
         }
-
-        function getChainTokens(chain) {
-            const tokens = {
-                ethereum: ['USDC', 'USDT', 'DAI', 'WBTC'],
-                polygon: ['USDC', 'USDT', 'DAI', 'WETH'],
-                arbitrum: ['USDC', 'USDT', 'DAI', 'WETH'],
-                solana: ['USDC', 'USDT', 'RAY', 'SRM'],
-                aptos: ['USDC', 'USDT', 'APT', 'WETH']
+        
+        function getChainName(chainId) {
+            const chainNames = {
+                'ethereum': '以太坊',
+                'polygon': 'Polygon',
+                'arbitrum': 'Arbitrum',
+                'optimism': 'Optimism',
+                'bsc': 'BSC',
+                'zksync': 'zkSync',
+                'solana': 'Solana',
+                'aptos': 'Aptos'
             };
-            return tokens[chain] || [];
-        }
-
-        function getGasEstimate(chain) {
-            const estimates = {
-                ethereum: {
-                    slow: '25 Gwei', standard: '30 Gwei', fast: '35 Gwei', instant: '40 Gwei',
-                    slowTime: '5-10 min', standardTime: '2-5 min', fastTime: '1-2 min', instantTime: '< 1 min'
-                },
-                polygon: {
-                    slow: '30 Gwei', standard: '35 Gwei', fast: '40 Gwei', instant: '50 Gwei',
-                    slowTime: '30-60 sec', standardTime: '15-30 sec', fastTime: '5-15 sec', instantTime: '< 5 sec'
-                },
-                arbitrum: {
-                    slow: '0.1 Gwei', standard: '0.2 Gwei', fast: '0.3 Gwei', instant: '0.5 Gwei',
-                    slowTime: '5-10 sec', standardTime: '2-5 sec', fastTime: '1-2 sec', instantTime: '< 1 sec'
-                },
-                solana: {
-                    slow: '5000 lamports', standard: '5000 lamports', fast: '5000 lamports', instant: '5000 lamports',
-                    slowTime: '10-20 sec', standardTime: '5-10 sec', fastTime: '2-5 sec', instantTime: '< 2 sec'
-                },
-                aptos: {
-                    slow: '100 gas', standard: '120 gas', fast: '150 gas', instant: '200 gas',
-                    slowTime: '5-10 sec', standardTime: '2-5 sec', fastTime: '1-2 sec', instantTime: '< 1 sec'
-                }
-            };
-            return estimates[chain] || estimates.ethereum;
-        }
-
-        function getChainInfo(chain) {
-            const info = {
-                ethereum: {
-                    '🌐 网络名称': 'Ethereum Mainnet',
-                    '🆔 Chain ID': '1',
-                    '💰 原生代币': 'ETH',
-                    '🔗 区块浏览器': 'etherscan.io',
-                    '⚡ 类型': 'EVM'
-                },
-                polygon: {
-                    '🌐 网络名称': 'Polygon Mainnet',
-                    '🆔 Chain ID': '137',
-                    '💰 原生代币': 'MATIC',
-                    '🔗 区块浏览器': 'polygonscan.com',
-                    '⚡ 类型': 'EVM Layer2'
-                },
-                arbitrum: {
-                    '🌐 网络名称': 'Arbitrum One',
-                    '🆔 Chain ID': '42161',
-                    '💰 原生代币': 'ETH',
-                    '🔗 区块浏览器': 'arbiscan.io',
-                    '⚡ 类型': 'EVM Layer2'
-                },
-                solana: {
-                    '🌐 网络名称': 'Solana Mainnet',
-                    '🆔 Chain ID': 'mainnet-beta',
-                    '💰 原生代币': 'SOL',
-                    '🔗 区块浏览器': 'solscan.io',
-                    '⚡ 类型': 'Non-EVM'
-                },
-                aptos: {
-                    '🌐 网络名称': 'Aptos Mainnet',
-                    '🆔 Chain ID': '1',
-                    '💰 原生代币': 'APT',
-                    '🔗 区块浏览器': 'aptoscan.com',
-                    '⚡ 类型': 'Non-EVM'
-                }
-            };
-            return info[chain] || info.ethereum;
+            return chainNames[chainId] || chainId;
         }
 
         // 初始化
-        log('🚀 ShieldWallet 演示系统已启动');
-        log('💡 选择不同的区块链网络，体验多链钱包功能');
+        window.addEventListener('DOMContentLoaded', async () => {
+            log('🚀 ShieldWallet 演示系统已启动');
+            log('💡 正在初始化钱包服务...');
+            await initWalletService();
+            log('💡 选择不同的区块链网络，体验多链钱包功能');
+        });
     </script>
 </body>
 </html>
