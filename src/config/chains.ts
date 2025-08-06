@@ -10,23 +10,25 @@ export const CHAIN_CONFIGS: { [key: string]: ChainConfig } = {
     name: '以太坊主网',
     type: ChainType.EVM,
     category: NetworkCategory.MAINNET,
-    rpcUrl: 'https://mainnet.infura.io/v3/YOUR_INFURA_KEY',
+    rpcUrl: 'https://eth-mainnet.g.alchemy.com/v2/demo',
     chainId: 1,
     symbol: 'ETH',
     decimals: 18,
     blockExplorerUrl: 'https://etherscan.io',
+    iconUrl: 'https://cryptologos.cc/logos/ethereum-eth-logo.png',
     isTestnet: false
   },
   'polygon': {
     id: 'polygon',
     name: 'Polygon主网',
     type: ChainType.EVM,
-    category: NetworkCategory.MAINNET,
+    category: NetworkCategory.LAYER2,
     rpcUrl: 'https://polygon-rpc.com',
     chainId: 137,
     symbol: 'MATIC',
     decimals: 18,
     blockExplorerUrl: 'https://polygonscan.com',
+    iconUrl: 'https://cryptologos.cc/logos/polygon-matic-logo.png',
     isTestnet: false
   },
   'bsc': {
@@ -39,6 +41,7 @@ export const CHAIN_CONFIGS: { [key: string]: ChainConfig } = {
     symbol: 'BNB',
     decimals: 18,
     blockExplorerUrl: 'https://bscscan.com',
+    iconUrl: 'https://cryptologos.cc/logos/bnb-bnb-logo.png',
     isTestnet: false
   },
   
@@ -53,6 +56,7 @@ export const CHAIN_CONFIGS: { [key: string]: ChainConfig } = {
     symbol: 'ETH',
     decimals: 18,
     blockExplorerUrl: 'https://arbiscan.io',
+    iconUrl: 'https://cryptologos.cc/logos/arbitrum-arb-logo.png',
     isTestnet: false
   },
   'optimism': {
@@ -65,6 +69,7 @@ export const CHAIN_CONFIGS: { [key: string]: ChainConfig } = {
     symbol: 'ETH',
     decimals: 18,
     blockExplorerUrl: 'https://optimistic.etherscan.io',
+    iconUrl: 'https://cryptologos.cc/logos/optimism-ethereum-op-logo.png',
     isTestnet: false
   },
   'zksync': {
@@ -77,6 +82,7 @@ export const CHAIN_CONFIGS: { [key: string]: ChainConfig } = {
     symbol: 'ETH',
     decimals: 18,
     blockExplorerUrl: 'https://explorer.zksync.io',
+    iconUrl: 'https://cryptologos.cc/logos/zksync-zk-logo.png',
     isTestnet: false
   },
   
@@ -90,6 +96,7 @@ export const CHAIN_CONFIGS: { [key: string]: ChainConfig } = {
     symbol: 'SOL',
     decimals: 9,
     blockExplorerUrl: 'https://explorer.solana.com',
+    iconUrl: 'https://cryptologos.cc/logos/solana-sol-logo.png',
     isTestnet: false
   },
   'aptos': {
@@ -101,20 +108,35 @@ export const CHAIN_CONFIGS: { [key: string]: ChainConfig } = {
     symbol: 'APT',
     decimals: 8,
     blockExplorerUrl: 'https://explorer.aptoslabs.com',
+    iconUrl: 'https://cryptologos.cc/logos/aptos-apt-logo.png',
     isTestnet: false
   },
   
   // 测试网
+  'ethereum-goerli': {
+    id: 'ethereum-goerli',
+    name: 'Ethereum Goerli',
+    type: ChainType.EVM,
+    category: NetworkCategory.TESTNET,
+    rpcUrl: 'https://eth-goerli.g.alchemy.com/v2/demo',
+    chainId: 5,
+    symbol: 'ETH',
+    decimals: 18,
+    blockExplorerUrl: 'https://goerli.etherscan.io',
+    iconUrl: 'https://cryptologos.cc/logos/ethereum-eth-logo.png',
+    isTestnet: true
+  },
   'ethereum-sepolia': {
     id: 'ethereum-sepolia',
     name: 'Sepolia测试网',
     type: ChainType.EVM,
     category: NetworkCategory.TESTNET,
-    rpcUrl: 'https://sepolia.infura.io/v3/YOUR_INFURA_KEY',
+    rpcUrl: 'https://eth-sepolia.g.alchemy.com/v2/demo',
     chainId: 11155111,
     symbol: 'ETH',
     decimals: 18,
     blockExplorerUrl: 'https://sepolia.etherscan.io',
+    iconUrl: 'https://cryptologos.cc/logos/ethereum-eth-logo.png',
     isTestnet: true
   },
   'polygon-mumbai': {
@@ -127,6 +149,59 @@ export const CHAIN_CONFIGS: { [key: string]: ChainConfig } = {
     symbol: 'MATIC',
     decimals: 18,
     blockExplorerUrl: 'https://mumbai.polygonscan.com',
+    iconUrl: 'https://cryptologos.cc/logos/polygon-matic-logo.png',
+    isTestnet: true
+  },
+  'arbitrum-goerli': {
+    id: 'arbitrum-goerli',
+    name: 'Arbitrum Goerli',
+    type: ChainType.EVM,
+    category: NetworkCategory.TESTNET,
+    rpcUrl: 'https://goerli-rollup.arbitrum.io/rpc',
+    chainId: 421613,
+    symbol: 'ETH',
+    decimals: 18,
+    blockExplorerUrl: 'https://goerli.arbiscan.io',
+    iconUrl: 'https://cryptologos.cc/logos/arbitrum-arb-logo.png',
+    isTestnet: true
+  },
+  'optimism-goerli': {
+    id: 'optimism-goerli',
+    name: 'Optimism Goerli',
+    type: ChainType.EVM,
+    category: NetworkCategory.TESTNET,
+    rpcUrl: 'https://goerli.optimism.io',
+    chainId: 420,
+    symbol: 'ETH',
+    decimals: 18,
+    blockExplorerUrl: 'https://goerli-optimism.etherscan.io',
+    iconUrl: 'https://cryptologos.cc/logos/optimism-ethereum-op-logo.png',
+    isTestnet: true
+  },
+  'zksync-testnet': {
+    id: 'zksync-testnet',
+    name: 'zkSync Era Testnet',
+    type: ChainType.EVM,
+    category: NetworkCategory.TESTNET,
+    rpcUrl: 'https://testnet.era.zksync.dev',
+    chainId: 280,
+    symbol: 'ETH',
+    decimals: 18,
+    blockExplorerUrl: 'https://goerli.explorer.zksync.io',
+    iconUrl: 'https://cryptologos.cc/logos/zksync-zk-logo.png',
+    isTestnet: true
+  },
+  'bsc-testnet': {
+    id: 'bsc-testnet',
+    name: 'BSC Testnet',
+    type: ChainType.EVM,
+    category: NetworkCategory.TESTNET,
+    rpcUrl: 'https://data-seed-prebsc-1-s1.binance.org:8545',
+    chainId: 97,
+    symbol: 'BNB',
+    decimals: 18,
+    blockExplorerUrl: 'https://testnet.bscscan.com',
+    iconUrl: 'https://cryptologos.cc/logos/bnb-bnb-logo.png',
     isTestnet: true
   },
   'solana-devnet': {
@@ -137,7 +212,8 @@ export const CHAIN_CONFIGS: { [key: string]: ChainConfig } = {
     rpcUrl: 'https://api.devnet.solana.com',
     symbol: 'SOL',
     decimals: 9,
-    blockExplorerUrl: 'https://explorer.solana.com',
+    blockExplorerUrl: 'https://explorer.solana.com?cluster=devnet',
+    iconUrl: 'https://cryptologos.cc/logos/solana-sol-logo.png',
     isTestnet: true
   },
   'aptos-testnet': {
@@ -148,7 +224,8 @@ export const CHAIN_CONFIGS: { [key: string]: ChainConfig } = {
     rpcUrl: 'https://fullnode.testnet.aptoslabs.com/v1',
     symbol: 'APT',
     decimals: 8,
-    blockExplorerUrl: 'https://explorer.aptoslabs.com',
+    blockExplorerUrl: 'https://explorer.aptoslabs.com/?network=testnet',
+    iconUrl: 'https://cryptologos.cc/logos/aptos-apt-logo.png',
     isTestnet: true
   }
 };

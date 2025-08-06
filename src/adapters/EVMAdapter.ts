@@ -1,22 +1,17 @@
 import { ethers } from 'ethers';
-import { ChainAdapter, ChainConfig, TransactionParams, TransactionResult, GasEstimate, NFTInfo } from '../types/chain';
-import * as bip39 from 'bip39';
+import { BaseAdapter } from './BaseAdapter';
+import { ChainConfig, TransactionParams, TransactionResult, GasEstimate, NFTInfo } from '../types/chain';
 
 /**
  * EVM链适配器
  * 支持以太坊、Polygon、Arbitrum、zkSync等EVM兼容链
  */
-export class EVMAdapter implements ChainAdapter {
-  private config: ChainConfig;
+export class EVMAdapter extends BaseAdapter {
   private provider: ethers.JsonRpcProvider;
 
   constructor(config: ChainConfig) {
-    this.config = config;
+    super(config);
     this.provider = new ethers.JsonRpcProvider(config.rpcUrl);
-  }
-
-  getChainConfig(): ChainConfig {
-    return this.config;
   }
 
   /**
@@ -24,13 +19,8 @@ export class EVMAdapter implements ChainAdapter {
    */
   async generateWallet(mnemonic: string, derivationPath: string = "m/44'/60'/0'/0/0"): Promise<{ address: string; privateKey: string }> {
     try {
-      // 验证助记词
-      if (!bip39.validateMnemonic(mnemonic)) {
-        throw new Error('无效的助记词');
-      }
-
       // 从助记词生成种子
-      const seed = await bip39.mnemonicToSeed(mnemonic);
+      const seed = await this.generateSeed(mnemonic);
       
       // 创建HD钱包
       const hdNode = ethers.HDNodeWallet.fromSeed(seed);
