@@ -205,15 +205,15 @@ export class UIManager {
       }
       
       .toast.info {
-        background-color: var(--primary-color);
+        background-color: rgba(79, 70, 229, 0.9) !important;
       }
       
       .toast.success {
-        background-color: var(--success-color);
+        background-color: rgba(34, 197, 94, 0.9) !important;
       }
       
       .toast.error {
-        background-color: var(--error-color);
+        background-color: rgba(239, 68, 68, 0.9) !important;
       }
       
       .modal {
@@ -222,7 +222,7 @@ export class UIManager {
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(128,128,128,0.7);
+        background-color: rgba(80,80,80,0.95);
         display: flex;
         align-items: center;
         justify-content: center;

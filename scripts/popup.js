@@ -540,14 +540,19 @@ class WalletController {
     sendMessage(message) {
         return new Promise((resolve, reject) => {
             try {
-                chrome.runtime.sendMessage(message, (response) => {
-                    if (chrome.runtime.lastError) {
-                        reject(chrome.runtime.lastError);
-                    }
-                    else {
-                        resolve(response);
-                    }
-                });
+                if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+                    chrome.runtime.sendMessage(message, (response) => {
+                        if (chrome.runtime.lastError) {
+                            reject(chrome.runtime.lastError);
+                        }
+                        else {
+                            resolve(response);
+                        }
+                    });
+                } else {
+                    // 在非扩展环境中返回模拟响应
+                    resolve({ success: false, error: '非扩展环境' });
+                }
             }
             catch (error) {
                 reject(error);
