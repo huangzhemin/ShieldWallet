@@ -34,6 +34,27 @@ module.exports = {
   },
   target: 'web',
   optimization: {
-    minimize: false
+    minimize: true,
+    splitChunks: {
+      chunks: 'all',
+      cacheGroups: {
+        vendor: {
+          test: /[\\/]node_modules[\\/]/,
+          name: 'vendors',
+          chunks: 'all',
+        },
+        common: {
+          name: 'common',
+          minChunks: 2,
+          chunks: 'all',
+          enforce: true
+        }
+      }
+    }
+  },
+  performance: {
+    hints: false,
+    maxEntrypointSize: 5000000,
+    maxAssetSize: 5000000
   }
 };

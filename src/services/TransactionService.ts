@@ -409,6 +409,7 @@ export class TransactionService {
         const result: TransactionResult = {
           success: true,
           hash: this.generateTransactionHash(),
+          status: 'confirmed',
           blockNumber: Math.floor(Math.random() * 1000000),
           gasUsed: '21000'
         };

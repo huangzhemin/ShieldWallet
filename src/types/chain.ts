@@ -76,6 +76,8 @@ export interface TransactionParams {
   maxFeePerGas?: string;
   maxPriorityFeePerGas?: string;
   nonce?: number;
+  chainType: ChainType;
+  from: string;
 }
 
 /**
@@ -87,6 +89,7 @@ export interface TransactionResult {
   blockNumber?: number;
   gasUsed?: string;
   effectiveGasPrice?: string;
+  success?: boolean;
 }
 
 /**

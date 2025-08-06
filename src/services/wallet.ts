@@ -7,6 +7,8 @@ import { DeFiService } from './DeFiService';
 import { BridgeService } from './BridgeService';
 import { NFTService } from './NFTService';
 import { GasService } from './GasService';
+import { PriceService } from './PriceService';
+import { MultiChainWalletManager } from './MultiChainWalletManager';
 
 /**
  * 钱包接口
@@ -38,10 +40,12 @@ export class WalletService {
   private static currentWallet: Wallet | null = null;
   private static isUnlocked: boolean = false;
   private static chainManager: ChainManager = chainManager;
-  private static defiService: DeFiService = new DeFiService();
-  private static bridgeService: BridgeService = new BridgeService(WalletService.chainManager);
-  private static nftService: NFTService = new NFTService();
+  private static priceService: PriceService = new PriceService();
   private static gasService: GasService = new GasService();
+  private static multiChainWalletManager: MultiChainWalletManager = new MultiChainWalletManager();
+  private static defiService: DeFiService = new DeFiService();
+  private static bridgeService: BridgeService = new BridgeService(WalletService.chainManager, WalletService.priceService, WalletService.gasService);
+  private static nftService: NFTService = new NFTService(WalletService.multiChainWalletManager);
   private static multiChainWallets: { [chainId: string]: { address: string; privateKey: string } } = {};
 
   /**

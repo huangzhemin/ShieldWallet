@@ -3,6 +3,24 @@
  * 提供所有服务类和相关类型的统一入口
  */
 
+// 跨链桥服务
+export {
+  BridgeService,
+  BridgeProtocol,
+  BridgeParams,
+  BridgeQuote,
+  BridgeStatus,
+  FeeOptimizationOptions,
+  EnhancedBridgeQuote,
+  SVMToEVMBridgeParams
+} from './BridgeService';
+
+// 导入BridgeService用于ServiceFactory
+import { BridgeService } from './BridgeService';
+import { MultiChainWalletManager } from './MultiChainWalletManager';
+import { ChainManager } from './ChainManager';
+import { GasService } from './GasService';
+
 // DeFi协议服务
 export {
   DeFiProtocolService,
@@ -177,10 +195,17 @@ export class ServiceFactory {
       );
       const priceService = new PriceService();
       const transactionService = new TransactionService();
-      const nftService = new NFTService();
       
-      // DeFiProtocolService需要MultiChainWalletManager参数，暂时传null
-      const defiService = new DeFiProtocolService(null as any);
+      // 创建MultiChainWalletManager实例
+      const multiChainWalletManager = new MultiChainWalletManager();
+      
+      // 创建ChainManager和GasService实例
+      const chainManager = new ChainManager();
+      const gasService = new GasService();
+      
+      const nftService = new NFTService(multiChainWalletManager);
+      const defiService = new DeFiProtocolService(multiChainWalletManager);
+      const bridgeService = new BridgeService(chainManager, priceService, gasService);
       
       // 初始化依赖服务
       await walletManagerService.initialize();
@@ -195,6 +220,7 @@ export class ServiceFactory {
       this.services.set('transaction', transactionService);
       this.services.set('nft', nftService);
       this.services.set('defi', defiService);
+      this.services.set('bridge', bridgeService);
       
       this.isInitialized = true;
       console.log('所有服务初始化完成');
@@ -269,6 +295,13 @@ export class ServiceFactory {
    */
   getDeFiService(): any {
     return this.getService('defi');
+  }
+
+  /**
+   * 获取跨链桥服务
+   */
+  getBridgeService(): any {
+    return this.getService('bridge');
   }
 
   /**
@@ -382,6 +415,13 @@ export class ServiceManager {
    */
   static getDeFiService(): any {
     return ServiceManager.getFactory().getDeFiService();
+  }
+
+  /**
+   * 获取跨链桥服务
+   */
+  static getBridgeService(): any {
+    return ServiceManager.getFactory().getBridgeService();
   }
 
   /**
