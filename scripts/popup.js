@@ -44,17 +44,42 @@ class UIManager {
      * 更新账户信息显示
      */
     updateAccountInfo(address, balance) {
-        // 更新短地址显示
-        const addressShort = `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
-        const addressElement = document.getElementById('accountAddressShort');
-        if (addressElement) {
-            addressElement.textContent = addressShort;
+        // 更新主余额显示
+        const mainBalanceElement = document.getElementById('mainBalance');
+        if (mainBalanceElement) {
+            mainBalanceElement.textContent = `$${balance}`;
         }
-        // 更新余额显示
-        const balanceElement = document.getElementById('ethBalance');
-        if (balanceElement) {
-            balanceElement.textContent = `${balance} ETH`;
+        
+        // 更新总资产显示
+        const totalAssetsElement = document.getElementById('totalAssets');
+        if (totalAssetsElement) {
+            totalAssetsElement.textContent = `$${balance}`;
         }
+    }
+    
+    /**
+     * 初始化标签页切换功能
+     */
+    initTabNavigation() {
+        const tabItems = document.querySelectorAll('.tab-item');
+        const tabPanes = document.querySelectorAll('.tab-pane');
+        
+        tabItems.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetTab = tab.getAttribute('data-tab');
+                
+                // 移除所有活动状态
+                tabItems.forEach(item => item.classList.remove('active'));
+                tabPanes.forEach(pane => pane.classList.remove('active'));
+                
+                // 添加当前活动状态
+                tab.classList.add('active');
+                const targetPane = document.getElementById(targetTab + 'Tab');
+                if (targetPane) {
+                    targetPane.classList.add('active');
+                }
+            });
+        });
     }
     /**
      * 更新接收页面信息
@@ -551,6 +576,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 // 设置所有UI事件监听器
 function setupEventListeners(uiManager, walletController) {
+    // 初始化标签页功能
+    uiManager.initTabNavigation();
+    
     // 欢迎页面按钮
     const createWalletBtn = document.getElementById('createWalletBtn');
     const importWalletBtn = document.getElementById('importWalletBtn');
@@ -562,11 +590,14 @@ function setupEventListeners(uiManager, walletController) {
     const backFromImportBtn = document.getElementById('backFromImportBtn');
     const importTypeSelect = document.getElementById('importType');
     // 钱包主页面
-    const copyAddressBtn = document.getElementById('copyAddressBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const settingsBtn = document.getElementById('settingsBtn');
+    const networkBtn = document.getElementById('networkBtn');
     const sendBtn = document.getElementById('sendBtn');
     const receiveBtn = document.getElementById('receiveBtn');
+    const swapBtn = document.getElementById('swapBtn');
     const historyBtn = document.getElementById('historyBtn');
-    const addTokenBtn = document.getElementById('addTokenBtn');
+    const toolsBtn = document.getElementById('toolsBtn');
     // 发送页面
     const sendForm = document.getElementById('sendForm');
     const backFromSendBtn = document.getElementById('backFromSendBtn');
@@ -648,14 +679,27 @@ function setupEventListeners(uiManager, walletController) {
         });
     }
     // 复制地址
-    if (copyAddressBtn) {
-        copyAddressBtn.addEventListener('click', () => {
-            const address = document.getElementById('accountAddressShort')?.textContent;
-            if (address) {
-                navigator.clipboard.writeText(address)
-                    .then(() => uiManager.showMessage('地址已复制到剪贴板'))
-                    .catch(err => console.error('复制失败:', err));
-            }
+    if (copyBtn) {
+        copyBtn.addEventListener('click', () => {
+            // TODO: 获取当前钱包地址
+            const address = '0x1234...5678'; // 临时地址
+            navigator.clipboard.writeText(address)
+                .then(() => uiManager.showMessage('地址已复制到剪贴板'))
+                .catch(err => console.error('复制失败:', err));
+        });
+    }
+    
+    // 设置按钮
+    if (settingsBtn) {
+        settingsBtn.addEventListener('click', () => {
+            uiManager.showMessage('设置功能即将上线');
+        });
+    }
+    
+    // 网络按钮
+    if (networkBtn) {
+        networkBtn.addEventListener('click', () => {
+            uiManager.showMessage('网络切换功能即将上线');
         });
     }
     // 操作按钮
@@ -670,10 +714,24 @@ function setupEventListeners(uiManager, walletController) {
             await walletController.showReceiveInfo();
         });
     }
+    // 兑换按钮
+    if (swapBtn) {
+        swapBtn.addEventListener('click', () => {
+            uiManager.showMessage('兑换功能即将上线');
+        });
+    }
+    
     if (historyBtn) {
         historyBtn.addEventListener('click', () => {
             // TODO: 实现交易历史功能
             uiManager.showMessage('交易历史功能即将上线');
+        });
+    }
+    
+    // 工具集按钮
+    if (toolsBtn) {
+        toolsBtn.addEventListener('click', () => {
+            uiManager.showMessage('工具集功能即将上线');
         });
     }
     // 发送表单提交
@@ -716,13 +774,7 @@ function setupEventListeners(uiManager, walletController) {
             await walletController.switchNetwork(networkId);
         });
     }
-    // 添加代币按钮
-    if (addTokenBtn) {
-        addTokenBtn.addEventListener('click', () => {
-            // TODO: 实现添加代币功能
-            uiManager.showMessage('添加代币功能即将上线');
-        });
-    }
+
 }
 
 /******/ })()

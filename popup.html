@@ -27,29 +27,124 @@
 
       <!-- 钱包主页面 -->
       <div class="screen hidden" id="walletScreen">
-        <div class="account-info">
-          <div class="account-address">
-            <span id="accountAddressShort">0x1234...5678</span>
-            <button id="copyAddressBtn" class="icon-btn">📋</button>
+        <!-- 顶部账户信息 -->
+        <div class="wallet-header">
+          <div class="wallet-info">
+            <div class="wallet-icon">
+              <img src="assets/icon48.svg" alt="Wallet" class="wallet-avatar">
+            </div>
+            <div class="wallet-details">
+              <div class="wallet-name">钱包 01</div>
+              <div class="account-name">账户 02 <span class="dropdown-arrow">▼</span></div>
+            </div>
           </div>
-          <div class="balance-container">
-            <h3>账户余额</h3>
-            <div class="balance" id="ethBalance">0.00 ETH</div>
+          <div class="header-actions">
+            <button class="header-btn" id="copyBtn">📋</button>
+            <button class="header-btn" id="settingsBtn">⚙️</button>
+            <button class="header-btn" id="networkBtn">🌐</button>
           </div>
         </div>
 
-        <div class="action-buttons">
-          <button id="sendBtn" class="action-btn">发送</button>
-          <button id="receiveBtn" class="action-btn">接收</button>
-          <button id="historyBtn" class="action-btn">历史</button>
+        <!-- 余额显示 -->
+        <div class="balance-section">
+          <div class="main-balance" id="mainBalance">$0.00</div>
+          <div class="balance-change">
+            <span class="change-amount" id="changeAmount">$0.00 (0.00%)</span>
+            <span class="time-period">1 日 <span class="dropdown-arrow">▼</span></span>
+          </div>
         </div>
 
-        <div class="token-list">
-          <h3>代币</h3>
-          <div class="token-list-container" id="tokenList">
-            <!-- 代币列表将通过JavaScript动态填充 -->
+        <!-- 功能按钮 -->
+        <div class="action-grid">
+          <div class="action-item" id="sendBtn">
+            <div class="action-icon">↑</div>
+            <div class="action-label">发送</div>
           </div>
-          <button id="addTokenBtn" class="btn btn-small">添加代币</button>
+          <div class="action-item" id="receiveBtn">
+            <div class="action-icon">↓</div>
+            <div class="action-label">接收</div>
+          </div>
+          <div class="action-item" id="swapBtn">
+            <div class="action-icon">⇄</div>
+            <div class="action-label">兑换</div>
+          </div>
+          <div class="action-item" id="historyBtn">
+            <div class="action-icon">📋</div>
+            <div class="action-label">交易历史</div>
+          </div>
+          <div class="action-item" id="toolsBtn">
+            <div class="action-icon">🔧</div>
+            <div class="action-label">工具集</div>
+          </div>
+        </div>
+
+        <!-- 标签页 -->
+        <div class="tab-navigation">
+          <div class="tab-item active" data-tab="tokens">币种</div>
+          <div class="tab-item" data-tab="defi">DeFi</div>
+          <div class="tab-item" data-tab="nft">NFT</div>
+          <div class="tab-item" data-tab="approvals">授权</div>
+        </div>
+
+        <!-- 资产内容 -->
+        <div class="tab-content">
+          <div class="tab-pane active" id="tokensTab">
+            <div class="assets-header">
+              <div class="assets-title">资产总值</div>
+              <div class="assets-value" id="totalAssets">$0.00</div>
+            </div>
+            <div class="token-list" id="tokenList">
+              <!-- 代币列表 -->
+              <div class="token-item">
+                <div class="token-info">
+                  <div class="token-icon eth-icon">Ξ</div>
+                  <div class="token-details">
+                    <div class="token-name">SEPOLIA_ETH</div>
+                    <div class="token-price">$0.00 0.00%</div>
+                  </div>
+                </div>
+                <div class="token-balance">
+                  <div class="balance-amount">0.042416</div>
+                  <div class="balance-value">$0.00</div>
+                </div>
+              </div>
+              <div class="token-item">
+                <div class="token-info">
+                  <div class="token-icon usdt-icon">₮</div>
+                  <div class="token-details">
+                    <div class="token-name">USDT</div>
+                    <div class="token-price">$0.99 0.00%</div>
+                  </div>
+                </div>
+                <div class="token-balance">
+                  <div class="balance-amount">0</div>
+                  <div class="balance-value">$0.00</div>
+                </div>
+              </div>
+              <div class="token-item">
+                <div class="token-info">
+                  <div class="token-icon usdc-icon">$</div>
+                  <div class="token-details">
+                    <div class="token-name">USDC</div>
+                    <div class="token-price">$0.99 0.00%</div>
+                  </div>
+                </div>
+                <div class="token-balance">
+                  <div class="balance-amount">0</div>
+                  <div class="balance-value">$0.00</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tab-pane" id="defiTab">
+            <div class="empty-state">暂无DeFi资产</div>
+          </div>
+          <div class="tab-pane" id="nftTab">
+            <div class="empty-state">暂无NFT资产</div>
+          </div>
+          <div class="tab-pane" id="approvalsTab">
+            <div class="empty-state">暂无授权记录</div>
+          </div>
         </div>
       </div>
 
