@@ -29,7 +29,7 @@ module.exports = {
   },
   output: {
     filename: '[name].js',
-    path: path.resolve(__dirname, 'public/scripts'),
+    path: path.resolve(__dirname, 'scripts'),
     clean: true,
   },
   target: 'web',

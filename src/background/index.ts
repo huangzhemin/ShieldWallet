@@ -78,11 +78,23 @@ async function createWallet(password: string): Promise<any> {
 async function importWallet(data: any): Promise<any> {
   try {
     const { type, value, password } = data;
+    
+    // 验证输入参数
+    if (!type || !value || !password) {
+      return { success: false, error: '缺少必要参数' };
+    }
+    
+    if (!['mnemonic', 'privateKey'].includes(type)) {
+      return { success: false, error: '不支持的导入类型' };
+    }
+    
     const result = await WalletService.importWallet(value, type, password);
     return { success: true, address: result.wallet.address };
   } catch (error) {
     console.error('导入钱包出错:', error);
-    return { success: false, error: '导入钱包失败' };
+    // 传递具体的错误信息
+    const errorMessage = error instanceof Error ? error.message : '导入钱包失败';
+    return { success: false, error: errorMessage };
   }
 }
 

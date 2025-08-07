@@ -278,16 +278,59 @@ export class WalletController {
   private sendMessage(message: any): Promise<any> {
     return new Promise((resolve, reject) => {
       try {
-        chrome.runtime.sendMessage(message, (response) => {
-          if (chrome.runtime.lastError) {
-            reject(chrome.runtime.lastError);
-          } else {
-            resolve(response);
-          }
-        });
+        // 检查是否在Chrome扩展环境中
+        if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+          chrome.runtime.sendMessage(message, (response) => {
+            if (chrome.runtime.lastError) {
+              reject(chrome.runtime.lastError);
+            } else {
+              resolve(response);
+            }
+          });
+        } else {
+          // 在非扩展环境中提供模拟响应（用于测试）
+          console.log('模拟环境 - 消息:', message);
+          this.handleMockResponse(message, resolve, reject);
+        }
       } catch (error) {
         reject(error);
       }
     });
   }
-} 
+
+  /**
+   * 处理模拟响应（用于在普通网页中测试）
+   */
+  private handleMockResponse(message: any, resolve: Function, reject: Function): void {
+    setTimeout(() => {
+      switch (message.type) {
+        case 'CHECK_WALLET_EXISTS':
+          resolve({ success: true, exists: false });
+          break;
+        case 'CREATE_WALLET':
+          resolve({ 
+            success: true, 
+            address: '0x1234567890123456789012345678901234567890',
+            mnemonic: 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
+          });
+          break;
+        case 'IMPORT_WALLET':
+          resolve({ 
+            success: true, 
+            address: '0x9876543210987654321098765432109876543210'
+          });
+          break;
+        case 'GET_ACCOUNT_INFO':
+          resolve({ 
+            success: true, 
+            address: this.currentAddress || '0x1234567890123456789012345678901234567890',
+            balance: '1.5',
+            network: 'ethereum'
+          });
+          break;
+        default:
+          resolve({ success: false, error: '未知的消息类型' });
+      }
+    }, 500); // 模拟网络延迟
+  }
+}
