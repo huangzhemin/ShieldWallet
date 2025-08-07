@@ -30,7 +30,7 @@
             </div>
             <div class="wallet-details">
               <div class="wallet-name">钱包 01</div>
-              <div class="account-name">账户 02 <span class="dropdown-arrow">▼</span></div>
+              <div class="account-name" id="accountNameBtn">账户 02 <span class="dropdown-arrow">▼</span></div>
             </div>
           </div>
           <div class="header-actions">
@@ -251,6 +251,42 @@
         </select>
       </div>
     </footer>
+  </div>
+
+  <!-- 账户切换弹窗 -->
+  <div class="modal-overlay hidden" id="accountSwitcherModal">
+    <div class="modal-content account-switcher">
+      <div class="modal-header">
+        <h3>选择账户</h3>
+        <button class="close-btn" id="closeAccountModal">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="account-list">
+          <div class="account-item active" data-account="account01">
+            <div class="account-info">
+              <div class="account-name">账户 01</div>
+              <div class="account-address">0x1234...5678</div>
+            </div>
+            <div class="account-balance">$0.00</div>
+          </div>
+          <div class="account-item" data-account="account02">
+            <div class="account-info">
+              <div class="account-name">账户 02</div>
+              <div class="account-address">0x9876...4321</div>
+            </div>
+            <div class="account-balance">$0.00</div>
+          </div>
+          <div class="account-item" data-account="account03">
+            <div class="account-info">
+              <div class="account-name">账户 03</div>
+              <div class="account-address">0xabcd...efgh</div>
+            </div>
+            <div class="account-balance">$0.00</div>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="addAccountBtn">+ 添加账户</button>
+      </div>
+    </div>
   </div>
 
   <script src="scripts/popup.js"></script>

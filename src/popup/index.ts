@@ -304,4 +304,107 @@ function setupEventListeners(uiManager: UIManager, walletController: WalletContr
       }
     });
   });
+  
+  // 账户切换相关事件
+  const closeAccountModal = document.getElementById('closeAccountModal');
+  const modalOverlay = document.getElementById('accountSwitcherModal');
+  const accountNameBtn = document.getElementById('accountNameBtn');
+  const accountItems = document.querySelectorAll('.account-item');
+  const addAccountBtn = document.getElementById('addAccountBtn');
+  
+  console.log('关闭按钮元素:', closeAccountModal);
+  console.log('遮罩层元素:', modalOverlay);
+  console.log('账户名称按钮:', accountNameBtn);
+  console.log('账户项:', accountItems);
+  
+  // 账户名称点击事件 - 显示账户切换弹窗
+  if (accountNameBtn && modalOverlay) {
+    console.log('绑定账户名称点击事件');
+    accountNameBtn.addEventListener('click', (e) => {
+      console.log('账户名称被点击，显示账户切换弹窗');
+      e.preventDefault();
+      e.stopPropagation();
+      modalOverlay.classList.remove('hidden');
+    });
+  } else {
+    console.error('未找到账户名称按钮或遮罩层元素');
+  }
+  
+  // 直接绑定关闭按钮事件
+  if (closeAccountModal) {
+    console.log('找到关闭按钮，绑定点击事件');
+    closeAccountModal.addEventListener('click', (e) => {
+      console.log('关闭按钮被点击！！！');
+      e.preventDefault();
+      e.stopPropagation();
+      if (modalOverlay) {
+        modalOverlay.classList.add('hidden');
+        console.log('弹窗已隐藏');
+      }
+    });
+  } else {
+    console.error('未找到关闭按钮元素');
+  }
+  
+  // 直接绑定遮罩层事件
+  if (modalOverlay) {
+    console.log('找到遮罩层，绑定点击事件');
+    modalOverlay.addEventListener('click', (e) => {
+      console.log('遮罩层被点击');
+      if (e.target === modalOverlay) {
+        console.log('点击的是遮罩层本身，关闭弹窗');
+        modalOverlay.classList.add('hidden');
+      }
+    });
+  } else {
+    console.error('未找到遮罩层元素');
+  }
+  
+  // 账户项点击事件
+  accountItems.forEach((item, index) => {
+    item.addEventListener('click', (e) => {
+      console.log(`账户项 ${index + 1} 被点击`);
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // 移除所有账户项的活动状态
+      accountItems.forEach(accountItem => {
+        accountItem.classList.remove('active');
+      });
+      
+      // 添加当前账户项的活动状态
+      item.classList.add('active');
+      
+      // 更新头部显示的账户名称
+      const accountName = item.querySelector('.account-name')?.textContent;
+      if (accountName && accountNameBtn) {
+        accountNameBtn.innerHTML = `${accountName} <span class="dropdown-arrow">▼</span>`;
+      }
+      
+      // 关闭弹窗
+      if (modalOverlay) {
+        modalOverlay.classList.add('hidden');
+      }
+      
+      // 这里可以添加切换账户的逻辑
+      uiManager.showSuccess(`已切换到${accountName}`);
+    });
+  });
+  
+  // 添加账户按钮事件
+  if (addAccountBtn) {
+    addAccountBtn.addEventListener('click', (e) => {
+      console.log('添加账户按钮被点击');
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // 关闭弹窗
+      if (modalOverlay) {
+        modalOverlay.classList.add('hidden');
+      }
+      
+      // 这里可以添加创建新账户的逻辑
+      uiManager.showMessage('添加账户功能即将上线');
+    });
+  }
 }
