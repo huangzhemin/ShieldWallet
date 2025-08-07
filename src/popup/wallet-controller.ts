@@ -186,6 +186,13 @@ export class WalletController {
   }
 
   /**
+   * 获取当前钱包地址
+   */
+  public getCurrentAddress(): string {
+    return this.currentAddress;
+  }
+
+  /**
    * 加载账户信息
    */
   private async loadAccountInfo(): Promise<void> {

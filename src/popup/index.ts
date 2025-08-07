@@ -43,6 +43,19 @@ function setupEventListeners(uiManager: UIManager, walletController: WalletContr
   const historyBtn = document.getElementById('historyBtn');
   const addTokenBtn = document.getElementById('addTokenBtn');
   
+  // 头部按钮
+  const copyBtn = document.getElementById('copyBtn');
+  const settingsBtn = document.getElementById('settingsBtn');
+  const networkBtn = document.getElementById('networkBtn');
+  
+  // 功能按钮
+  const swapBtn = document.getElementById('swapBtn');
+  const toolsBtn = document.getElementById('toolsBtn');
+  
+  // 标签页
+  const tabItems = document.querySelectorAll('.tab-item');
+  const tabPanes = document.querySelectorAll('.tab-pane');
+  
   // 发送页面
   const sendForm = document.getElementById('sendForm') as HTMLFormElement;
   const backFromSendBtn = document.getElementById('backFromSendBtn');
@@ -56,15 +69,23 @@ function setupEventListeners(uiManager: UIManager, walletController: WalletContr
   
   // 欢迎页面事件
   if (createWalletBtn) {
+    console.log('创建钱包按钮找到，绑定事件监听器');
     createWalletBtn.addEventListener('click', () => {
+      console.log('创建钱包按钮被点击');
       uiManager.showScreen('createWalletScreen');
     });
+  } else {
+    console.error('未找到创建钱包按钮');
   }
   
   if (importWalletBtn) {
+    console.log('导入钱包按钮找到，绑定事件监听器');
     importWalletBtn.addEventListener('click', () => {
+      console.log('导入钱包按钮被点击');
       uiManager.showScreen('importWalletScreen');
     });
+  } else {
+    console.error('未找到导入钱包按钮');
   }
   
   // 创建钱包表单提交
@@ -224,4 +245,63 @@ function setupEventListeners(uiManager: UIManager, walletController: WalletContr
       uiManager.showMessage('添加代币功能即将上线');
     });
   }
+  
+  // 头部按钮事件
+  if (copyBtn) {
+    copyBtn.addEventListener('click', async () => {
+      const address = await walletController.getCurrentAddress();
+      if (address) {
+        navigator.clipboard.writeText(address)
+          .then(() => uiManager.showMessage('地址已复制到剪贴板'))
+          .catch(err => console.error('复制失败:', err));
+      }
+    });
+  }
+  
+  if (settingsBtn) {
+    settingsBtn.addEventListener('click', () => {
+      // TODO: 实现设置功能
+      uiManager.showMessage('设置功能即将上线');
+    });
+  }
+  
+  if (networkBtn) {
+    networkBtn.addEventListener('click', () => {
+      // TODO: 实现网络切换功能
+      uiManager.showMessage('网络切换功能即将上线');
+    });
+  }
+  
+  // 功能按钮事件
+  if (swapBtn) {
+    swapBtn.addEventListener('click', () => {
+      // TODO: 实现兑换功能
+      uiManager.showMessage('兑换功能即将上线');
+    });
+  }
+  
+  if (toolsBtn) {
+    toolsBtn.addEventListener('click', () => {
+      // TODO: 实现工具集功能
+      uiManager.showMessage('工具集功能即将上线');
+    });
+  }
+  
+  // 标签页切换事件
+  tabItems.forEach(tabItem => {
+    tabItem.addEventListener('click', () => {
+      const targetTab = tabItem.getAttribute('data-tab');
+      
+      // 移除所有活动状态
+      tabItems.forEach(item => item.classList.remove('active'));
+      tabPanes.forEach(pane => pane.classList.remove('active'));
+      
+      // 添加当前活动状态
+      tabItem.classList.add('active');
+      const targetPane = document.getElementById(targetTab + 'Tab');
+      if (targetPane) {
+        targetPane.classList.add('active');
+      }
+    });
+  });
 }

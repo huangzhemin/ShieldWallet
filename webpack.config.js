@@ -34,7 +34,7 @@ module.exports = {
   },
   target: 'web',
   optimization: {
-    minimize: true,
+    minimize: false,
     splitChunks: {
       chunks: 'all',
       cacheGroups: {

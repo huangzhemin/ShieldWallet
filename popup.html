@@ -253,6 +253,30 @@
     </footer>
   </div>
 
-  <script src="scripts/popup.js" type="module"></script>
+  <script src="scripts/popup.js"></script>
+  <script>
+    // 临时调试代码
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('临时调试: DOM已加载');
+      const createBtn = document.getElementById('createWalletBtn');
+      const importBtn = document.getElementById('importWalletBtn');
+      console.log('临时调试: 创建按钮', createBtn);
+      console.log('临时调试: 导入按钮', importBtn);
+      
+      if (createBtn) {
+        createBtn.onclick = function() {
+          console.log('临时调试: 创建钱包按钮被点击!');
+          alert('创建钱包按钮工作正常!');
+        };
+      }
+      
+      if (importBtn) {
+        importBtn.onclick = function() {
+          console.log('临时调试: 导入钱包按钮被点击!');
+          alert('导入钱包按钮工作正常!');
+        };
+      }
+    });
+  </script>
 </body>
 </html>
