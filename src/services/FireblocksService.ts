@@ -113,10 +113,13 @@ export interface FireblocksWalletResponse {
 export class FireblocksService {
   private config: FireblocksConfig;
   private baseUrl: string;
+  private isDemoMode: boolean;
 
   constructor(config: FireblocksConfig) {
     this.config = config;
     this.baseUrl = config.baseUrl || 'https://api.fireblocks.io';
+    // 检测是否为演示模式（使用演示API密钥）
+    this.isDemoMode = config.apiKey === 'demo-api-key' || config.apiKey.startsWith('demo-');
   }
 
   /**
@@ -328,40 +331,69 @@ export class FireblocksService {
    * 生成 JWT Token
    */
   private generateJWT(path: string, bodyJson?: string): string {
-    // 这里需要实现 JWT 签名逻辑
-    // 使用 RS256 算法和私钥签名
-    // 暂时返回模拟 token
-    const header = {
-      alg: 'RS256',
-      typ: 'JWT'
-    };
+    try {
+      const crypto = require('crypto');
+      
+      const header = {
+        alg: 'RS256',
+        typ: 'JWT'
+      };
 
-    const now = Math.floor(Date.now() / 1000);
-    const payload = {
-      uri: path,
-      nonce: Math.floor(Math.random() * 1000000),
-      iat: now,
-      exp: now + 55, // 55秒过期
-      sub: this.config.apiKey,
-      bodyHash: bodyJson ? this.sha256(bodyJson) : undefined
-    };
+      const now = Math.floor(Date.now() / 1000);
+      const payload = {
+        uri: path,
+        nonce: Math.floor(Math.random() * 1000000),
+        iat: now,
+        exp: now + 55, // 55秒过期
+        sub: this.config.apiKey,
+        bodyHash: bodyJson ? this.sha256(bodyJson) : undefined
+      };
 
-    // 实际实现中需要使用 jsonwebtoken 库或类似工具
-    return `${Buffer.from(JSON.stringify(header)).toString('base64')}.${Buffer.from(JSON.stringify(payload)).toString('base64')}.signature`;
+      // Base64URL 编码
+      const base64UrlEncode = (obj: any) => {
+        return Buffer.from(JSON.stringify(obj))
+          .toString('base64')
+          .replace(/\+/g, '-')
+          .replace(/\//g, '_')
+          .replace(/=/g, '');
+      };
+
+      const encodedHeader = base64UrlEncode(header);
+      const encodedPayload = base64UrlEncode(payload);
+      const signingInput = `${encodedHeader}.${encodedPayload}`;
+
+      // 使用私钥签名
+      const signature = crypto
+        .createSign('RSA-SHA256')
+        .update(signingInput)
+        .sign(this.config.privateKey, 'base64')
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=/g, '');
+
+      return `${signingInput}.${signature}`;
+    } catch (error) {
+      throw new Error(`JWT 生成失败: ${(error as Error).message}`);
+    }
   }
 
   /**
    * SHA256 哈希
    */
   private sha256(data: string): string {
-    // 实际实现中需要使用 crypto 库
-    return 'mock_hash';
+    const crypto = require('crypto');
+    return crypto.createHash('sha256').update(data).digest('hex');
   }
 
   /**
    * 发起 HTTP 请求
    */
   private async makeRequest(method: string, endpoint: string, body?: any): Promise<any> {
+    // 演示模式：返回模拟数据
+    if (this.isDemoMode) {
+      return this.getMockResponse(method, endpoint, body);
+    }
+
     try {
       const url = `${this.baseUrl}${endpoint}`;
       const bodyJson = body ? JSON.stringify(body) : undefined;
@@ -390,6 +422,123 @@ export class FireblocksService {
     } catch (error) {
       throw new Error(`API 请求失败: ${(error as Error).message}`);
     }
+  }
+
+  /**
+   * 获取模拟响应数据（演示模式）
+   */
+  private getMockResponse(method: string, endpoint: string, body?: any): any {
+    console.log(`🎭 演示模式: ${method} ${endpoint}`);
+    
+    // 创建 Vault 账户
+    if (method === 'POST' && endpoint === '/v1/vault/accounts') {
+      return {
+        id: 'demo-vault-001',
+        name: body?.name || 'Demo Vault Account',
+        customerRefId: body?.customerRefId
+      };
+    }
+
+    // 获取 Vault 账户列表
+    if (method === 'GET' && endpoint === '/v1/vault/accounts') {
+      return [
+        {
+          id: 'demo-vault-001',
+          name: 'Demo Vault Account',
+          customerRefId: 'demo-ref-001'
+        }
+      ];
+    }
+
+    // 创建 Vault 资产地址
+    if (method === 'POST' && endpoint.includes('/vault/accounts/') && endpoint.includes('/addresses')) {
+      const assetId = endpoint.split('/')[5];
+      return {
+        address: this.generateDemoAddress(assetId),
+        legacyAddress: assetId === 'BTC' ? '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa' : undefined,
+        tag: assetId === 'XRP' ? '12345' : undefined
+      };
+    }
+
+    // 获取余额
+    if (method === 'GET' && endpoint.includes('/vault/accounts/') && endpoint.includes('/balances')) {
+      return {
+        assetId: 'ETH',
+        total: '1.5',
+        available: '1.5',
+        pending: '0',
+        frozen: '0'
+      };
+    }
+
+    // 估算交易费用
+    if (method === 'POST' && endpoint === '/v1/transactions/estimate_fee') {
+      return {
+        gasLimit: '21000',
+        gasPrice: '20000000000',
+        maxFeePerGas: '30000000000',
+        maxPriorityFeePerGas: '2000000000',
+        networkFee: '0.00042',
+        baseFee: '18000000000'
+      };
+    }
+
+    // 创建交易
+    if (method === 'POST' && endpoint === '/v1/transactions') {
+      return {
+        id: `demo-tx-${Date.now()}`,
+        txHash: `0x${Math.random().toString(16).substr(2, 64)}`,
+        status: 'COMPLETED',
+        createdAt: Date.now(),
+        lastUpdated: Date.now(),
+        assetId: body?.assetId || 'ETH',
+        source: body?.source,
+        destination: body?.destination,
+        amount: body?.amount || '0.1',
+        networkFee: '0.00042'
+      };
+    }
+
+    // 获取 NFT 列表
+    if (method === 'GET' && endpoint.includes('/vault/accounts/') && endpoint.includes('/nfts')) {
+      return [
+        {
+          tokenId: '1',
+          name: 'Demo NFT #1',
+          description: 'A demo NFT for testing',
+          collection: {
+            contractAddress: '0x1234567890123456789012345678901234567890',
+            name: 'Demo Collection'
+          },
+          media: [
+            {
+              url: 'https://example.com/nft1.png',
+              type: 'image/png'
+            }
+          ]
+        }
+      ];
+    }
+
+    // 默认响应
+    return {
+      success: true,
+      message: 'Demo mode response',
+      timestamp: Date.now()
+    };
+  }
+
+  /**
+   * 生成演示地址
+   */
+  private generateDemoAddress(assetId: string): string {
+    const addresses: { [key: string]: string } = {
+      'ETH': '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b5',
+      'BTC': 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
+      'USDC': '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b5',
+      'USDT': '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b5'
+    };
+    return addresses[assetId] || '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b5';
   }
 
   /**

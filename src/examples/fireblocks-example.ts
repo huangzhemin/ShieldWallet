@@ -38,11 +38,14 @@ export class FireblocksMPCExample {
     this.securityService = new SecurityService();
     this.notificationService = new NotificationService();
 
+    // 检查环境变量配置
+    this.checkEnvironmentConfig();
+
     // 配置 Fireblocks
     const fireblocksConfig: FireblocksConfig = {
       apiKey: process.env.FIREBLOCKS_API_KEY || 'demo-api-key',
       privateKey: process.env.FIREBLOCKS_PRIVATE_KEY || this.getDemoPrivateKey(),
-      baseUrl: process.env.FIREBLOCKS_BASE_URL || 'https://api.fireblocks.io',
+      baseUrl: process.env.FIREBLOCKS_BASE_URL || 'https://sandbox-api.fireblocks.io', // 使用沙盒环境
       timeoutMs: 30000
     };
 
@@ -52,6 +55,31 @@ export class FireblocksMPCExample {
       this.securityService,
       this.notificationService
     );
+  }
+
+  /**
+   * 检查环境变量配置
+   */
+  private checkEnvironmentConfig(): void {
+    console.log('\n🔧 检查环境配置...');
+    
+    const hasApiKey = !!process.env.FIREBLOCKS_API_KEY;
+    const hasPrivateKey = !!process.env.FIREBLOCKS_PRIVATE_KEY;
+    const isDemoMode = !hasApiKey || !hasPrivateKey;
+    
+    console.log(`   API Key: ${hasApiKey ? '✅ 已设置' : '❌ 未设置 (使用演示密钥)'}`);
+    console.log(`   Private Key: ${hasPrivateKey ? '✅ 已设置' : '❌ 未设置 (使用演示私钥)'}`);
+    console.log(`   Base URL: ${process.env.FIREBLOCKS_BASE_URL || 'https://sandbox-api.fireblocks.io'}`);
+    
+    if (isDemoMode) {
+      console.log('\n🎭 演示模式已启用');
+      console.log('   - 所有 API 调用将返回模拟数据');
+      console.log('   - 不会进行真实的区块链交易');
+      console.log('   - 适合学习和测试 MPC 门限签名流程');
+      console.log('\n💡 要使用真实 Fireblocks API，请参考 FIREBLOCKS_SETUP.md 配置凭证');
+    } else {
+      console.log('\n✅ 生产模式已启用 - 将连接到真实的 Fireblocks API');
+    }
   }
 
   /**
@@ -82,6 +110,16 @@ export class FireblocksMPCExample {
       console.log('✅ Fireblocks MPC 示例执行完成！');
     } catch (error) {
       console.error('❌ 示例执行失败:', error);
+      
+      // 提供错误解决建议
+      if (error instanceof Error && error.message.includes('401')) {
+        console.log('\n💡 解决建议:');
+        console.log('   1. 检查 FIREBLOCKS_API_KEY 是否正确');
+        console.log('   2. 检查 FIREBLOCKS_PRIVATE_KEY 是否为有效的 PEM 格式私钥');
+        console.log('   3. 确认 API 密钥具有足够的权限');
+        console.log('   4. 验证网络连接是否正常');
+      }
+      
       throw error;
     }
   }
@@ -247,6 +285,20 @@ export class FireblocksMPCExample {
     console.log('✍️ 模拟签名者批准流程...');
 
     try {
+      // 检查签名请求状态
+      const requests = this.fireblocksManager.getSignatureRequests();
+      const request = requests.find(r => r.requestId === requestId);
+      
+      if (!request) {
+        throw new Error('签名请求不存在');
+      }
+
+      if (request.status === 'completed') {
+        console.log('🎯 签名请求已自动完成，无需手动批准');
+        console.log('🎉 门限签名完成，交易已通过 Fireblocks MPC 执行！');
+        return;
+      }
+
       // 第一个签名者批准
       console.log('   👤 CEO 设备批准中...');
       const approved1 = await this.fireblocksManager.approveSignatureRequest(
@@ -310,11 +362,34 @@ export class FireblocksMPCExample {
    * 获取演示用的私钥（实际使用时应从环境变量读取）
    */
   private getDemoPrivateKey(): string {
-    return `-----BEGIN PRIVATE KEY-----
-MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC7VJTUt9Us8cKB
-wxFrKzahAiTdUcahlyCL1Fpmd/LZNnN7Z8fGnIhfcyNqBQE1gyd0lyS+SDtfLSWa
-... (这里应该是您的实际私钥)
------END PRIVATE KEY-----`;
+    // 这是一个用于演示的测试私钥，请在生产环境中使用您的实际 Fireblocks 私钥
+    return `-----BEGIN RSA PRIVATE KEY-----
+MIIEowIBAAKCAQEAtuBwQeE4XDKi39dsLet1eEGc+1QN0d1/SIsdBFGDE0bCZpiJ
+vlEcE0L74tzNZaS4gZDIUFLQ29IKCrg5DQGJu02BQD5znaLWUxDxLi+ddPUEIvfe
+3zGetKinYLFj9soolaIhhSNhiaq5l4RXRhfi+V5HqG5YfE82PhEvp4Aw2JE4Kygt
+mkVNH2p4aW4lRUDgmIUPd656r2ejGgHO8yhDaIPZwIr6BqsMZ/hVuplQxLCLtsg2
+u9bVpNiuuwOhKJBuImnkcvkFEeuOTfvRvtJY+vxsRfyZOhOVHOyre3wG42VmvM3i
+ieRHadf8HXfGnOUylQCP3IZSfNYweAikaqYtfwIDAQABAoIBAGv50m4jc2qEf0RY
+5keqmX46h1yhgVNjS27irGxLUHAGPGvlLpcPPttklmKZajDUdBgUCyHZ8/WGa2Vu
+5kh2mwLbPTBYb10osxDylORnOrm+nQWkgpQXsRQL7F+b/WDOde37f30jqchl5BTB
+D+KT4fDIqNia5mXnQyicbx2gA7cp7wDqN+A/VHO9omhWkf8OC9UJqRtxBSw8cxGy
+1SGiDuDMerFeTNEvhCX8AmHeIJgoQZx8o+sPDQNMtPql9DFIIRweexXMqCuJpod/
+fWLpX69mrMb0xzUy+j0xLnf/+9NRdEPGRbMS6QI24oaLU+JQMw6p5YvXWy2VN+iM
+Wg/hgCkCgYEA5276iGfyqHuInPoZSeGCKiK8k4hBBGGXvvV91lcreWJmcKeU61fq
+LjmxI0MRYajHA3Ox3kwdVqiYyibff3NAAkhbyYaDnrZGlTE6p/Z27cUNWGFmckW4
+FlH/zzW4BdeSre1BOKDO970D2zP+hkFwS8gTUB8KpHcdU6lEmy8DWosCgYEAykn3
+scpBF+GMRg5UhHJb7Py/6mfqGbvAASijSPgITB5mNvGd5mimVFzkbUNBf6t/MNXd
+XEuiqF14opcE/D9wBBZXYzMroHT/XWoDo9Q778l6X4IADQVEKjijuy3LH7cZS72O
+tHJ9gOp+3za/ZXYVuT6lklIilzl9C6LazcL4+10CgYEAyHFFCYlGEIhVrOerqWJn
+8wh83SZgcWP5IonKgC6lV49S+/UYtLBDAeAzvD+lOTkNjL7SaZ7wthJ1qnf6kI8H
+/DIhVSxsqLRj82lczQZYwNwvD8HkEcqygppofVWgWWb5Aix/lYUpXEXXpi2lHzBk
+Cy5xE66e8Ay+WKw84E7aj7sCgYA2/Qpm+vrc2gP+mzCgXFHexwoIVz0Mx7u21Owm
+Dr56qpzQfLeWhYYJUsMJbInmgaDujoRA7ZKGv/nmALVrOHdjtQsGPUezs3ojU4kv
+xKaSVSt9wOHwqCjSbVkcraMUuPoYW6vqI2E4ZQYd+Uzn8MSQ+ZWag9dBUnBKdHeU
+DVcPRQKBgGSqSHJKz1Y5cmig94LPfG6ElEm9qvBcc6AXtYyMj5+2ZR4JoSBqGMUR
+D0jhzA2Mkj2CZOoHE+guAZez0RNtJEvYiLXjHvIkL56emIZcXj+x0VrFtI87HExa
+3b1zumO2PCfo1qXJPfD3X4v6hQHKs7WUmplIDsQn07IEZG50lTnl
+-----END RSA PRIVATE KEY-----`;
   }
 
   /**

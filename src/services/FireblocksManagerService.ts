@@ -221,11 +221,13 @@ export class FireblocksManagerService {
 
       // 如果满足自动批准条件，直接执行
       if (await this.shouldAutoApprove(wallet, transactionData)) {
-        return await this.executeTransaction(requestId);
+        await this.executeTransaction(requestId);
+        signatureRequest.status = 'completed';
+        console.log('🎯 自动批准条件满足，交易已自动执行');
+      } else {
+        // 通知相关签名者
+        await this.notifySigners(wallet, signatureRequest);
       }
-
-      // 通知相关签名者
-      await this.notifySigners(wallet, signatureRequest);
 
       return requestId;
     } catch (error) {
