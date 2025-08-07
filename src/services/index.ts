@@ -20,6 +20,8 @@ import { BridgeService } from './BridgeService';
 import { MultiChainWalletManager } from './MultiChainWalletManager';
 import { ChainManager } from './ChainManager';
 import { GasService } from './GasService';
+import { FireblocksService } from './FireblocksService';
+import { FireblocksManagerService } from './FireblocksManagerService';
 
 // DeFi协议服务
 export {
@@ -141,6 +143,24 @@ export {
   WalletStats,
   WalletEvent
 } from './WalletManagerService';
+
+// Fireblocks MPC 服务
+export {
+  FireblocksService,
+  FireblocksConfig,
+  FireblocksTransactionRequest,
+  FireblocksTransactionResponse,
+  FireblocksBalanceResponse,
+  FireblocksFeeEstimate,
+  FireblocksNFTResponse,
+  FireblocksWalletResponse
+} from './FireblocksService';
+
+export {
+  FireblocksManagerService,
+  MPCWalletConfig,
+  MPCSignatureRequest
+} from './FireblocksManagerService';
 
 /**
  * 服务工厂类
