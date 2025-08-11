@@ -665,6 +665,28 @@
                     <div id="signatureStatusContainer">
                         <!-- 签名状态将在这里显示 -->
                     </div>
+                    <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button class="btn btn-warning" onclick="fireblocksSignCurrentTx()">使用 Fireblocks 链下签名</button>
+                        <button class="btn btn-secondary" onclick="toggleFireblocksConfig()">配置 Fireblocks</button>
+                    </div>
+                    <div id="fireblocksConfigPanel" class="card" style="margin-top: 12px; display: none;">
+                        <h3>Fireblocks 配置</h3>
+                        <div class="form-group">
+                            <label for="fbVaultId">Vault Account ID</label>
+                            <input id="fbVaultId" placeholder="请输入Vault Account ID">
+                        </div>
+                        <div class="form-group">
+                            <label for="fbAssetId">Asset ID（如 ETH_ETHEREUM）</label>
+                            <input id="fbAssetId" placeholder="ETH_ETHEREUM" value="ETH_ETHEREUM">
+                        </div>
+                        <div class="form-group">
+                            <label for="fbProxyUrl">代理服务地址</label>
+                            <input id="fbProxyUrl" placeholder="http://localhost:4000" value="http://localhost:4000">
+                        </div>
+                        <div class="form-group">
+                            <small>说明：请先在项目根目录创建 .env，填入 Fireblocks API Key 与 Private Key，并运行 `npm run proxy` 启动代理服务。</small>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="card">
@@ -780,6 +802,83 @@
 
         // 初始化MPC模拟器
         const mpcSimulator = new MPCSimulator();
+
+        function toggleFireblocksConfig() {
+            const panel = document.getElementById('fireblocksConfigPanel');
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        }
+
+        async function fireblocksSignCurrentTx() {
+            try {
+                const proxyUrl = (document.getElementById('fbProxyUrl')?.value || '').trim();
+                const vaultId = (document.getElementById('fbVaultId')?.value || '').trim();
+                const assetId = (document.getElementById('fbAssetId')?.value || '').trim() || 'ETH_ETHEREUM';
+                if (!proxyUrl || !vaultId) {
+                    showAlert('warning', '请先在“配置 Fireblocks”中填写代理地址与Vault Account ID');
+                    return;
+                }
+                if (!transactionData) {
+                    showAlert('warning', '请先创建交易');
+                    return;
+                }
+
+                // 准备要签名的原始消息（示例：对交易哈希签名）
+                const messageHex = (transactionData.id || 'tx').split('').map(c => c.charCodeAt(0).toString(16).padStart(2,'0')).join('');
+                const payload = {
+                    vaultAccountId: vaultId,
+                    assetId: assetId,
+                    messageHex: '0x' + messageHex,
+                    note: 'MPC Demo Raw Signing'
+                };
+
+                showAlert('info', '正在请求 Fireblocks 链下签名...');
+                const resp = await fetch(`${proxyUrl.replace(/\/$/, '')}/api/fireblocks/sign-raw`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await resp.json();
+                if (!data.ok) {
+                    throw new Error(data.error || '签名失败');
+                }
+
+                // 将签名计入签名进度（把Fireblocks视为一名参与方）
+                const required = walletData.threshold;
+                const container = document.getElementById('signatureStatusContainer');
+                const items = container.querySelectorAll('.signature-item');
+                let signedCount = 0;
+                items.forEach(it => {
+                    if (it.classList.contains('signed')) signedCount++;
+                });
+                if (signedCount < required) {
+                    // 标记一个待签名项为已签名
+                    for (let i = 0; i < items.length; i++) {
+                        if (!items[i].classList.contains('signed')) {
+                            items[i].classList.remove('pending');
+                            items[i].classList.add('signed');
+                            const badge = items[i].querySelector('.status-badge');
+                            if (badge) {
+                                badge.textContent = 'Fireblocks 已签名';
+                                badge.className = 'status-badge status-active';
+                            }
+                            signedCount++;
+                            break;
+                        }
+                    }
+                }
+                document.getElementById('signatureProgress').style.width = (signedCount / required * 100) + '%';
+                document.getElementById('signatureStatus').textContent = signedCount >= required ? '所有必需签名已完成！' : `已获得 ${signedCount}/${required} 个签名...`;
+
+                showAlert('success', `Fireblocks 签名成功，交易ID: ${data.txId}`);
+                // 达到阈值则执行交易
+                if (signedCount >= required) {
+                    await executeTransaction();
+                }
+            } catch (e) {
+                console.error(e);
+                showAlert('error', 'Fireblocks 签名失败: ' + e.message);
+            }
+        }
 
         // 步骤导航
         function showStep(step) {

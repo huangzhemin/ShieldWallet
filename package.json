@@ -13,7 +13,9 @@
     "serve:https": "npx serve . -p 3000 --ssl-cert",
     "open": "start http://localhost:3000/mpc-demo.html",
     "open:mac": "open http://localhost:3000/mpc-demo.html",
-    "open:linux": "xdg-open http://localhost:3000/mpc-demo.html"
+    "open:linux": "xdg-open http://localhost:3000/mpc-demo.html",
+    "proxy": "node server/fireblocks-proxy.js",
+    "start:all": "concurrently \"npm:proxy\" \"npm:start\""
   },
   "keywords": [
     "mpc",
@@ -41,7 +43,15 @@
     "node": ">=14.0.0",
     "npm": ">=6.0.0"
   },
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.0",
+    "express": "^4.18.3",
+    "fireblocks-sdk": "^5.0.0"
+  },
   "devDependencies": {
+    "concurrently": "^8.2.2",
     "serve": "^14.2.0"
   },
   "optionalDependencies": {
@@ -55,6 +65,8 @@
   "files": [
     "mpc-demo.html",
     "mpc-wallet-service.js",
+    "server/fireblocks-proxy.js",
+    ".env.example",
     "README.md",
     "LICENSE"
   ]
