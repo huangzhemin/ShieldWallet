@@ -4,7 +4,8 @@
     "module": "CommonJS",
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "types": ["node", "chrome"]
   },
   "ts-node": {
     "esm": false,

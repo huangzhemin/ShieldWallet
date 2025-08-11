@@ -1,64 +1,61 @@
 {
-  "name": "shieldwallet",
+  "name": "mpc-wallet-demo",
   "version": "1.0.0",
-  "description": "安全可靠的区块链钱包Chrome扩展",
-  "main": "index.js",
+  "description": "MPC多签钱包演示系统 - 展示多方计算钱包的完整流程",
+  "main": "mpc-demo.html",
   "scripts": {
-    "build": "webpack --mode=production",
-    "dev": "webpack --mode=development --watch",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "example:fireblocks": "npx ts-node --project tsconfig.node.json src/examples/fireblocks-example.ts",
-    "fireblocks:init": "node -e \"console.log('请设置环境变量: FIREBLOCKS_API_KEY, FIREBLOCKS_PRIVATE_KEY')\""
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/huangzhemin/ShieldWallet.git"
+    "start": "npx serve . -p 3000",
+    "dev": "npx serve . -p 3000 --live",
+    "build": "echo '这是一个静态演示系统，无需构建'",
+    "test": "echo '测试功能待实现'",
+    "lint": "echo '代码检查功能待实现'",
+    "serve": "npx serve . -p 3000",
+    "serve:https": "npx serve . -p 3000 --ssl-cert",
+    "open": "start http://localhost:3000/mpc-demo.html",
+    "open:mac": "open http://localhost:3000/mpc-demo.html",
+    "open:linux": "xdg-open http://localhost:3000/mpc-demo.html"
   },
   "keywords": [
+    "mpc",
     "wallet",
     "blockchain",
+    "cryptocurrency",
+    "multi-signature",
+    "threshold-signature",
+    "demo",
     "ethereum",
-    "chrome-extension"
+    "solana",
+    "web3"
   ],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/huangzhemin/ShieldWallet/issues"
+  "author": "MPC Wallet Demo Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/mpc-wallet-demo.git"
   },
-  "homepage": "https://github.com/huangzhemin/ShieldWallet#readme",
-  "dependencies": {
-    "@arbitrum/sdk": "^4.0.0",
-    "@layerzerolabs/scan-client": "^0.0.6",
-    "@solana/spl-token": "^0.3.9",
-    "@solana/web3.js": "^1.87.6",
-    "@uniswap/sdk-core": "^4.2.1",
-    "@uniswap/v3-sdk": "^3.11.2",
-    "@wormhole-foundation/wormhole-connect": "^0.2.5",
-    "aptos": "^1.21.0",
-    "axios": "^1.6.2",
-    "bip39": "^3.1.0",
-    "bs58": "^5.0.0",
-    "ed25519-hd-key": "^1.3.0",
-    "ethers": "^6.8.1",
-    "fireblocks-sdk": "^5.0.0",
-    "jsonwebtoken": "^9.0.2",
-    "tweetnacl": "^1.0.3",
-    "zksync-ethers": "^5.0.0"
+  "bugs": {
+    "url": "https://github.com/your-username/mpc-wallet-demo/issues"
+  },
+  "homepage": "https://github.com/your-username/mpc-wallet-demo#readme",
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
   },
   "devDependencies": {
-    "@types/chrome": "^0.0.246",
-    "@types/node": "^24.2.0",
-    "assert": "^2.1.0",
-    "buffer": "^6.0.3",
-    "crypto-browserify": "^3.12.1",
-    "path-browserify": "^1.0.1",
-    "stream-browserify": "^3.0.0",
-    "ts-loader": "^9.5.0",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.2.2",
-    "url": "^0.11.4",
-    "util": "^0.12.5",
-    "webpack": "^5.89.0",
-    "webpack-cli": "^5.1.4"
-  }
+    "serve": "^14.2.0"
+  },
+  "optionalDependencies": {
+    "ethers": "^6.8.1"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ],
+  "files": [
+    "mpc-demo.html",
+    "mpc-wallet-service.js",
+    "README.md",
+    "LICENSE"
+  ]
 }

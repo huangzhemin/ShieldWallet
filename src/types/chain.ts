@@ -157,3 +157,49 @@ export interface ChainAdapter {
   getNFTs(address: string): Promise<NFTInfo[]>;
   validateAddress(address: string): boolean;
 }
+
+/**
+ * LayerZero相关类型定义
+ */
+export interface LayerZeroConfig {
+  endpointId: number;
+  contractAddress: string;
+  gasLimit: string;
+  adapterParams: string;
+}
+
+export interface LayerZeroChainConfig {
+  [chainId: string]: LayerZeroConfig;
+}
+
+export interface LayerZeroMessage {
+  dstChainId: number;
+  recipient: string;
+  payload: string;
+  refundAddress: string;
+  zroPaymentAddress: string;
+  adapterParams: string;
+}
+
+export interface LayerZeroFee {
+  nativeFee: string;
+  zroFee: string;
+  totalFee: string;
+}
+
+export interface SVMToEVMBridgeConfig {
+  solanaTokenMint: string;
+  evmTokenContract: string;
+  wormholeSequence?: string;
+  layerZeroEndpoint?: number;
+}
+
+export interface CrossChainTransaction {
+  sourceTxHash: string;
+  destinationTxHash?: string;
+  bridgeProtocol: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  estimatedCompletion?: number;
+  confirmations?: number;
+  requiredConfirmations?: number;
+}

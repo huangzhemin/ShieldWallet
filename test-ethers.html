@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ethers.js兼容性测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 ethers.js兼容性测试</h1>
+    
+    <div class="test-section">
+        <h2>基本信息</h2>
+        <p><strong>ethers.js版本:</strong> <span id="version">检测中...</span></p>
+        <p><strong>加载状态:</strong> <span id="loadStatus">检测中...</span></p>
+    </div>
+
+    <div class="test-section">
+        <h2>功能测试</h2>
+        <button onclick="testWalletCreation()">测试钱包创建</button>
+        <button onclick="testRandomBytes()">测试随机字节生成</button>
+        <button onclick="testAddressValidation()">测试地址验证</button>
+        <button onclick="testAllFunctions()">运行所有测试</button>
+    </div>
+
+    <div class="test-section">
+        <h2>测试结果</h2>
+        <div id="testResults"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>兼容性建议</h2>
+        <div id="compatibilityAdvice"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.8.1/dist/ethers.umd.min.js"></script>
+    <script>
+        let testResults = [];
+
+        // 检查ethers.js加载状态
+        function checkEthersLoad() {
+            const versionSpan = document.getElementById('version');
+            const loadStatusSpan = document.getElementById('loadStatus');
+            
+            if (typeof ethers === 'undefined') {
+                versionSpan.textContent = '未加载';
+                loadStatusSpan.textContent = '❌ 失败';
+                loadStatusSpan.className = 'error';
+                return false;
+            }
+            
+            const version = ethers.version || '未知版本';
+            versionSpan.textContent = version;
+            loadStatusSpan.textContent = '✅ 成功';
+            loadStatusSpan.className = 'success';
+            return true;
+        }
+
+        // 测试钱包创建
+        function testWalletCreation() {
+            try {
+                const wallet = ethers.Wallet.createRandom();
+                const result = {
+                    test: '钱包创建',
+                    status: '✅ 成功',
+                    details: `地址: ${wallet.address.substring(0, 20)}...`
+                };
+                addTestResult(result);
+                return true;
+            } catch (error) {
+                const result = {
+                    test: '钱包创建',
+                    status: '❌ 失败',
+                    details: error.message
+                };
+                addTestResult(result);
+                return false;
+            }
+        }
+
+        // 测试随机字节生成
+        function testRandomBytes() {
+            try {
+                const bytes = ethers.randomBytes(32);
+                const result = {
+                    test: '随机字节生成',
+                    status: '✅ 成功',
+                    details: `生成了 ${bytes.length} 字节`
+                };
+                addTestResult(result);
+                return true;
+            } catch (error) {
+                const result = {
+                    test: '随机字节生成',
+                    status: '❌ 失败',
+                    details: error.message
+                };
+                addTestResult(result);
+                return false;
+            }
+        }
+
+        // 测试地址验证
+        function testAddressValidation() {
+            try {
+                const testAddress = '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6';
+                const isValid = ethers.isAddress(testAddress);
+                const result = {
+                    test: '地址验证',
+                    status: '✅ 成功',
+                    details: `测试地址 ${isValid ? '有效' : '无效'}`
+                };
+                addTestResult(result);
+                return true;
+            } catch (error) {
+                const result = {
+                    test: '地址验证',
+                    status: '❌ 失败',
+                    details: error.message
+                };
+                addTestResult(result);
+                return false;
+            }
+        }
+
+        // 运行所有测试
+        function testAllFunctions() {
+            testResults = [];
+            document.getElementById('testResults').innerHTML = '';
+            
+            const tests = [
+                testWalletCreation,
+                testRandomBytes,
+                testAddressValidation
+            ];
+            
+            let passedTests = 0;
+            tests.forEach(test => {
+                if (test()) {
+                    passedTests++;
+                }
+            });
+            
+            // 生成兼容性建议
+            generateCompatibilityAdvice(passedTests, tests.length);
+        }
+
+        // 添加测试结果
+        function addTestResult(result) {
+            testResults.push(result);
+            const resultsDiv = document.getElementById('testResults');
+            
+            const resultElement = document.createElement('div');
+            resultElement.innerHTML = `
+                <h3>${result.test}</h3>
+                <p><strong>状态:</strong> <span class="${result.status.includes('成功') ? 'success' : 'error'}">${result.status}</span></p>
+                <p><strong>详情:</strong> ${result.details}</p>
+            `;
+            
+            resultsDiv.appendChild(resultElement);
+        }
+
+        // 生成兼容性建议
+        function generateCompatibilityAdvice(passedTests, totalTests) {
+            const adviceDiv = document.getElementById('compatibilityAdvice');
+            
+            if (passedTests === totalTests) {
+                adviceDiv.innerHTML = `
+                    <div class="success">
+                        <h3>🎉 完全兼容</h3>
+                        <p>所有测试都通过了！ethers.js工作正常，MPC演示系统应该可以正常运行。</p>
+                    </div>
+                `;
+            } else if (passedTests > 0) {
+                adviceDiv.innerHTML = `
+                    <div class="warning">
+                        <h3>⚠️ 部分兼容</h3>
+                        <p>${passedTests}/${totalTests} 个测试通过。某些功能可能无法正常工作。</p>
+                        <p>建议检查ethers.js版本或使用备用方案。</p>
+                    </div>
+                `;
+            } else {
+                adviceDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ 不兼容</h3>
+                        <p>所有测试都失败了！ethers.js可能没有正确加载或版本不兼容。</p>
+                        <p>建议：</p>
+                        <ul>
+                            <li>检查网络连接</li>
+                            <li>刷新页面重试</li>
+                            <li>使用不同的浏览器</li>
+                            <li>检查ethers.js版本</li>
+                        </ul>
+                    </div>
+                `;
+            }
+        }
+
+        // 页面加载完成后运行检查
+        document.addEventListener('DOMContentLoaded', function() {
+            // 等待ethers.js加载
+            setTimeout(() => {
+                checkEthersLoad();
+                if (typeof ethers !== 'undefined') {
+                    testAllFunctions();
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html> 
